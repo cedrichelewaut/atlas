@@ -8,9 +8,14 @@
 *{box-sizing:border-box}html{color-scheme:light}html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:13px/1.45 var(--font);font-feature-settings:"cv11","ss01";-webkit-font-smoothing:antialiased}
 button,input{font:inherit;color:inherit}
 ::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:#d5d8e1;border-radius:9px;border:2px solid var(--surface)}::-webkit-scrollbar-track{background:transparent}
-#app{display:grid;grid-template-rows:56px 1fr auto;height:100%}
-#madewith{padding:3px 18px 4px;font-size:11px;line-height:14px;color:var(--muted,#8a90a0);background:var(--surface);border-top:1px solid var(--border);text-align:center}
-#madewith a{color:inherit;text-decoration:none}#madewith a:hover{color:var(--text);text-decoration:underline}
+#app{display:grid;grid-template-rows:56px 1fr;height:100%}
+#stage{grid-template-rows:auto auto minmax(64px,1fr)!important}
+#mapwrap{height:calc(100vh - 56px - 126px - 72px)}
+#madewith{display:flex;align-items:center;gap:14px;padding:14px 18px;border-top:1px solid var(--border);background:var(--bg);color:var(--text)}
+#madewith .mw-mark{flex:none;width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:var(--surface);border:1px solid var(--border);font-weight:700;font-size:15px;color:var(--text)}
+#madewith .mw-t{font-size:14px;font-weight:600;line-height:1.3}#madewith .mw-s{font-size:12.5px;color:var(--muted);line-height:1.35;margin-top:1px}
+#madewith a{color:var(--accent-2);text-decoration:none;font-weight:600}#madewith a:hover{text-decoration:underline}
+#madewith .mw-go{margin-left:auto;flex:none;font-size:13px;padding:6px 12px;border:1px solid var(--border-2);border-radius:999px;background:var(--surface);color:var(--text);font-weight:500}#madewith .mw-go:hover{border-color:var(--accent-2);color:var(--accent-2);text-decoration:none}
 header{display:flex;align-items:center;gap:16px;padding:0 16px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.92);backdrop-filter:blur(8px);box-shadow:0 1px 0 rgba(15,23,42,.04)}
 .brand{display:flex;align-items:center;gap:10px;min-width:220px}.logo{width:30px;height:30px;display:grid;place-items:center;flex:none}.amark{display:block}
 .brand h1{font-size:15px;font-weight:650;margin:0;letter-spacing:-.01em}.brand small{display:block;color:var(--muted);font-size:11px;margin-top:-1px}
@@ -135,7 +140,8 @@ aside{display:flex!important;flex-direction:column}
 </header>
 <main>
  <section id=stage><div id=mapwrap><div class=skel id=skel><div></div><div></div><div></div></div><iframe id=fv sandbox="allow-scripts allow-same-origin" title="FlexViz dashboard"></iframe></div>
-  <div id=filters><div class=fh><b>Filters</b><span id=fsum>none — all books</span><a id=freset>Reset all</a></div><div class=sliders id=sliders></div></div></section>
+  <div id=filters><div class=fh><b>Filters</b><span id=fsum>none — all books</span><a id=freset>Reset all</a></div><div class=sliders id=sliders></div></div>
+  <div id=madewith><div class=mw-mark>F</div><div><div class=mw-t>Made with <a href="https://flexviz.tech" target=_blank rel="noopener noreferrer">FlexViz</a></div><div class=mw-s>Interactive cross-filter dashboards in pure Python. The map and sliders above share one FlexViz state with Atlas AI.</div></div><a class=mw-go href="https://flexviz.tech" target=_blank rel="noopener noreferrer">flexviz.tech ↗</a></div></section>
  <aside>
   <nav class=tabs role=tablist>
    <button class="tab on" data-tab=lib role=tab><svg class="amark" width=18 height=18 viewBox="0 0 32 32" aria-hidden=true><g shape-rendering="crispEdges"><rect width="32" height="32" fill="#FAFAF7"/><rect x="1" y="1" width="30" height="30" fill="none" stroke="#9A2400" stroke-width="2"/><rect x="1" y="1" width="7" height="30" fill="#9A2400"/></g><rect x="13" y="10" width="4" height="6" rx="2" fill="#9A2400"/><rect x="21" y="10" width="4" height="6" rx="2" fill="#9A2400"/></svg><span>Atlas AI</span></button>
@@ -168,8 +174,7 @@ aside{display:flex!important;flex-direction:column}
   </section>
   <button id=fab title="Ask Atlas AI"><svg class="amark" width=30 height=30 viewBox="0 0 32 32" aria-hidden=true><g shape-rendering="crispEdges"><rect width="32" height="32" fill="#FAFAF7"/><rect x="1" y="1" width="30" height="30" fill="none" stroke="#9A2400" stroke-width="2"/><rect x="1" y="1" width="7" height="30" fill="#9A2400"/></g><rect x="13" y="10" width="4" height="6" rx="2" fill="#9A2400"/><rect x="21" y="10" width="4" height="6" rx="2" fill="#9A2400"/></svg><span class=tip>Ask Atlas AI</span></button>
  </aside>
-</main>
-<footer id=madewith>Made with <a href="https://flexviz.tech" target=_blank rel="noopener noreferrer">FlexViz</a></footer></div>
+</main></div>
 <script>
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt=n=>n==null?'—':n.toLocaleString('en'),kfmt=n=>n==null?'':n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(n>=1e4?0:1)+'k':String(n);
@@ -387,13 +392,15 @@ function setSync(ok,txt){const s=$('#sync');s.querySelector('.dot').className='d
 function sse(){const es=new EventSource('/api/events');es.onopen=()=>setSync(true,'Live · synced');es.onerror=()=>setSync(false,'Reconnecting…');
  es.onmessage=async e=>{const m=JSON.parse(e.data);if(m.type==='hello'&&m.boot){if(window.__boot&&window.__boot!==m.boot){location.reload();return}window.__boot=m.boot}if(m.type==='apply'&&W)await applyPatch(m.patch,m.id);
   if(m.type==='focus'){focus=m.book;marker();document.querySelectorAll('#toplist .bk').forEach(t=>t.classList.toggle('sel',!!focus&&+t.dataset.i===focus.i))}}}
-async function boot(){skelRows();const st=$('#mapwrap');const c=await fetch('/api/config?h='+Math.round(st.clientHeight)).then(r=>r.json());FIGS=c.figures;if(c.total){const sb=document.getElementById('subtitle');if(sb)sb.textContent=c.subtitle||(c.total.toLocaleString('en-US')+' books · mapped by description');}
+function sizeMap(){const st=$('#stage'),mw=$('#mapwrap');const h=st.clientHeight-$('#filters').offsetHeight-72;mw.style.height=Math.max(260,h)+'px'}
+function fitMap(){try{const d=W&&W.document.getElementById('fv-dashboard');if(!d)return;const b=Math.ceil(d.getBoundingClientRect().bottom)+6;const mw=$('#mapwrap');if(b>120&&b<mw.clientHeight)mw.style.height=b+'px'}catch(e){}}
+async function boot(){skelRows();sizeMap();const st=$('#mapwrap');const c=await fetch('/api/config?h='+Math.round(st.clientHeight)).then(r=>r.json());FIGS=c.figures;if(c.total){const sb=document.getElementById('subtitle');if(sb)sb.textContent=c.subtitle||(c.total.toLocaleString('en-US')+' books · mapped by description');}
  loadModels();
  const f=$('#fv');f.onload=async()=>{const w=f.contentWindow;try{w.open=()=>null}catch(e){}
   const base=w.document.createElement('link');base.rel='stylesheet';base.href='/assets/fv-light.css';w.document.head.appendChild(base);const css=w.document.createElement('style');css.textContent=FVCSS;w.document.head.appendChild(css);
   for(let k=0;k<200&&typeof w.flexvizState!=='function';k++)await new Promise(r=>setTimeout(r,100));
   for(let k=0;k<150&&!mapDiv.call(null,W=w);k++)await new Promise(r=>setTimeout(r,100));
-  W=w;loadPoints();const s=await fetch('/api/state').then(r=>r.json());await applyPatch({state:s.state},'restore');f.classList.add('ready');$('#skel').classList.add('gone');window.__fvReady=true;poll();sse()};f.src=c.dash_url}
+  W=w;loadPoints();const s=await fetch('/api/state').then(r=>r.json());await applyPatch({state:s.state},'restore');f.classList.add('ready');$('#skel').classList.add('gone');fitMap();setTimeout(fitMap,600);window.__fvReady=true;poll();sse()};f.src=c.dash_url}
 // ---------- search ----------
 let acT,acR=[],acI=-1;$('#sq').oninput=e=>{clearTimeout(acT);const v=e.target.value.trim();if(v.length<2){$('#ac').style.display='none';return}
  acT=setTimeout(async()=>{acR=await fetch('/api/search?q='+encodeURIComponent(v)+'&limit=7').then(r=>r.json());acI=-1;
