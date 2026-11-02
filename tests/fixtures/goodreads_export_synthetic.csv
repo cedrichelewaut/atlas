@@ -1,0 +1,61 @@
+Book Id,Title,Author,Author l-f,Additional Authors,ISBN,ISBN13,My Rating,Average Rating,Publisher,Binding,Number of Pages,Year Published,Original Publication Year,Date Read,Date Added,Bookshelves,Bookshelves with positions,Exclusive Shelf,My Review,Spoiler,Private Notes,Read Count,Owned Copies
+1000,Pride and Prejudice,Jane Austen,"Austen, Jane",,"=""""","=""""",1,4.00,,Paperback,184,,1813,,2024/01/01,to-read,,read,,,,1,0
+1001,"Frankenstein; or, The modern Prometheus",Mary Wollstonecraft Shelley,"Wollstonecraft Shelley, Mary",,"=""""","=""""",3,4.27,,Paperback,603,,1818,,2024/01/01,"gothic, horror",,read,,,,1,0
+1002,"Moby Dick; Or, The Whale",Herman Melville,"Melville, Herman",,"=""""","=""""",0,3.88,,Paperback,519,,1851,,2024/01/01,"gothic, horror",,read,,,,1,0
+1003,Alice's Adventures in Wonderland,Lewis Carroll,"Carroll, Lewis",,"=""""","=""""",5,3.82,,Paperback,354,,1865,,2024/01/01,classics,,to-read,,,,1,0
+1004,The Adventures of Sherlock Holmes,Arthur Conan Doyle,"Conan Doyle, Arthur",,"=""""","=""""",0,3.23,,Paperback,674,,1892,,2024/01/01,classics,,to-read,,,,1,0
+1005,Dracula,Bram Stoker,"Stoker, Bram",,"=""""","=""""",5,3.50,,Paperback,552,,1897,,2024/01/01,classics,,read,,,,1,0
+1006,The strange case of Dr. Jekyll and Mr. Hyde,Robert Louis Stevenson,"Louis Stevenson, Robert",,"=""""","=""""",3,4.51,,Paperback,686,,1886,,2024/01/01,"classics, favorites",,to-read,,,,1,0
+1007,A Room with a View,E. M. (Edward Morgan) Forster,"M. (Edward Morgan) Forster, E.",,"=""""","=""""",1,4.15,,Paperback,590,,1908,,2024/01/01,to-read,,read,,,,1,0
+1008,Middlemarch,George Eliot,"Eliot, George",,"=""""","=""""",3,4.37,,Paperback,689,,1871,,2024/01/01,classics,,read,,,,1,0
+1009,The Works of William Shakespeare [Cambridge Edition] [Vol. 5 of 9],William Shakespeare,"Shakespeare, William",,"=""""","=""""",5,4.59,,Paperback,423,,,,2024/01/01,classics,,to-read,,,,1,0
+1010,The Blue Castle: a novel,L. M. (Lucy Maud) Montgomery,"M. (Lucy Maud) Montgomery, L.",,"=""""","=""""",5,4.56,,Paperback,632,,1926,,2024/01/01,"gothic, horror",,read,,,,1,0
+1011,Crime and Punishment,Fyodor Dostoyevsky,"Dostoyevsky, Fyodor",,"=""""","=""""",2,3.60,,Paperback,631,,1866,,2024/01/01,"gothic, horror",,read,,,,1,0
+1012,Jane Eyre: An Autobiography,Charlotte Brontë,"Brontë, Charlotte",,"=""""","=""""",3,3.54,,Paperback,533,,1847,,2024/01/01,"gothic, horror",,read,,,,1,0
+1013,"Little Women; Or, Meg, Jo, Beth, and Amy",Louisa May Alcott,"May Alcott, Louisa",,"=""""","=""""",2,3.97,,Paperback,503,,1868,,2024/01/01,classics,,to-read,,,,1,0
+1014,The Count of Monte Cristo,Alexandre Dumas,"Dumas, Alexandre",,"=""""","=""""",5,3.91,,Paperback,287,,,,2024/01/01,"gothic, horror",,to-read,,,,1,0
+1015,The Picture of Dorian Gray,Oscar Wilde,"Wilde, Oscar",,"=""""","=""""",3,4.23,,Paperback,600,,1890,,2024/01/01,classics,,to-read,,,,1,0
+1016,A Tale of Two Cities,Charles Dickens,"Dickens, Charles",,"=""""","=""""",5,4.39,,Paperback,523,,1859,,2024/01/01,"classics, favorites",,read,,,,1,0
+1017,The Great Gatsby,F. Scott (Francis Scott) Fitzgerald,"Scott (Francis Scott) Fitzgerald, F.",,"=""""","=""""",4,3.52,,Paperback,132,,1925,,2024/01/01,"classics, favorites",,read,,,,1,0
+1018,The Secret of Chimneys,Agatha Christie,"Christie, Agatha",,"=""""","=""""",3,3.92,,Paperback,481,,,,2024/01/01,"gothic, horror",,to-read,,,,1,0
+1019,Metamorphosis,Franz Kafka,"Kafka, Franz",,"=""""","=""""",5,3.97,,Paperback,125,,1915,,2024/01/01,"gothic, horror",,read,,,,1,0
+1020,The Enchanted April,Elizabeth Von Arnim,"Von Arnim, Elizabeth",,"=""""","=""""",4,4.29,,Paperback,330,,1922,,2024/01/01,"gothic, horror",,read,,,,1,0
+1021,The Yellow Wallpaper,Charlotte Perkins Gilman,"Perkins Gilman, Charlotte",,"=""""","=""""",3,4.42,,Paperback,687,,1892,,2024/01/01,"classics, favorites",,to-read,,,,1,0
+1022,Twenty years after,Alexandre Dumas,"Dumas, Alexandre",,"=""""","=""""",3,4.34,,Paperback,544,,,,2024/01/01,to-read,,read,,,,1,0
+1023,War and Peace,"Leo, graf Tolstoy","graf Tolstoy, Leo,",,"=""""","=""""",4,3.96,,Paperback,459,,1869,,2024/01/01,"gothic, horror",,read,,,,1,0
+1024,Cranford,Elizabeth Cleghorn Gaskell,"Cleghorn Gaskell, Elizabeth",,"=""""","=""""",1,4.09,,Paperback,683,,1853,,2024/01/01,"classics, favorites",,read,,,,1,0
+1025,The King in Yellow,Robert W. (Robert William) Chambers,"W. (Robert William) Chambers, Robert",,"=""""","=""""",4,4.32,,Paperback,381,,1895,,2024/01/01,classics,,read,,,,1,0
+1026,The Expedition of Humphry Clinker,T. (Tobias) Smollett,"(Tobias) Smollett, T.",,"=""""","=""""",0,4.42,,Paperback,583,,1771,,2024/01/01,classics,,to-read,,,,1,0
+1027,The Adventures of Ferdinand Count Fathom — Complete,T. (Tobias) Smollett,"(Tobias) Smollett, T.",,"=""""","=""""",1,3.58,,Paperback,309,,,,2024/01/01,to-read,,to-read,,,,1,0
+1028,"History of Tom Jones, a Foundling",Henry Fielding,"Fielding, Henry",,"=""""","=""""",0,3.43,,Paperback,381,,1749,,2024/01/01,"classics, favorites",,to-read,,,,1,0
+1029,"The Adventures of Tom Sawyer, Complete",Mark Twain,"Twain, Mark",,"=""""","=""""",5,4.20,,Paperback,585,,1876,,2024/01/01,to-read,,to-read,,,,1,0
+1030,The Adventures of Roderick Random,T. (Tobias) Smollett,"(Tobias) Smollett, T.",,"=""""","=""""",3,3.36,,Paperback,439,,1748,,2024/01/01,"gothic, horror",,to-read,,,,1,0
+1031,"The String of Pearls; Or, The Barber of Fleet Street. A Domestic Romance.",James Malcolm Rymer,"Malcolm Rymer, James",,"=""""","=""""",3,4.31,,Paperback,384,,1846,,2024/01/01,classics,,to-read,,,,1,0
+1032,The Scarlet Letter,Nathaniel Hawthorne,"Hawthorne, Nathaniel",,"=""""","=""""",5,3.91,,Paperback,334,,1850,,2024/01/01,"gothic, horror",,read,,,,1,0
+1033,The Wonderful Wizard of Oz,L. Frank (Lyman Frank) Baum,"Frank (Lyman Frank) Baum, L.",,"=""""","=""""",1,3.23,,Paperback,269,,1900,,2024/01/01,classics,,read,,,,1,0
+1034,Great Expectations,Charles Dickens,"Dickens, Charles",,"=""""","=""""",3,4.19,,Paperback,556,,1860,,2024/01/01,"classics, favorites",,to-read,,,,1,0
+1035,Grimms' Fairy Tales,Jacob Grimm,"Grimm, Jacob",,"=""""","=""""",1,3.93,,Paperback,151,,1812,,2024/01/01,"gothic, horror",,to-read,,,,1,0
+1036,Sense and Sensibility,Jane Austen,"Austen, Jane",,"=""""","=""""",5,4.08,,Paperback,180,,1811,,2024/01/01,to-read,,read,,,,1,0
+1037,A Study in Scarlet,Arthur Conan Doyle,"Conan Doyle, Arthur",,"=""""","=""""",1,4.43,,Paperback,433,,1887,,2024/01/01,classics,,read,,,,1,0
+1038,Adventures of Huckleberry Finn,Mark Twain,"Twain, Mark",,"=""""","=""""",2,4.48,,Paperback,425,,1884,,2024/01/01,"classics, favorites",,to-read,,,,1,0
+1039,Wuthering Heights,Emily Brontë,"Brontë, Emily",,"=""""","=""""",4,3.55,,Paperback,128,,1847,,2024/01/01,classics,,read,,,,1,0
+1040,"Barry Locke, half-back",Ralph Henry Barbour,"Henry Barbour, Ralph",,"=""""","=""""",4,3.85,,Paperback,641,,,,2024/01/01,classics,,to-read,,,,1,0
+1041,Ulysses,James Joyce,"Joyce, James",,"=""""","=""""",1,3.69,,Paperback,330,,1922,,2024/01/01,"gothic, horror",,read,,,,1,0
+1042,The Legend of Sleepy Hollow,Washington Irving,"Irving, Washington",,"=""""","=""""",3,3.35,,Paperback,519,,1820,,2024/01/01,to-read,,to-read,,,,1,0
+1043,Treasure Island,Robert Louis Stevenson,"Louis Stevenson, Robert",,"=""""","=""""",0,3.66,,Paperback,531,,1883,,2024/01/01,to-read,,read,,,,1,0
+1044,Anne of Green Gables,L. M. (Lucy Maud) Montgomery,"M. (Lucy Maud) Montgomery, L.",,"=""""","=""""",1,3.48,,Paperback,455,,1908,,2024/01/01,"classics, favorites",,to-read,,,,1,0
+1045,The Works of Edgar Allan Poe — Volume 2,Edgar Allan Poe,"Allan Poe, Edgar",,"=""""","=""""",3,3.50,,Paperback,218,,,,2024/01/01,"gothic, horror",,to-read,,,,1,0
+1046,The Mysteries of Udolpho,Ann Ward Radcliffe,"Ward Radcliffe, Ann",,"=""""","=""""",5,3.95,,Paperback,665,,1794,,2024/01/01,"classics, favorites",,read,,,,1,0
+1047,The Brothers Karamazov,Fyodor Dostoyevsky,"Dostoyevsky, Fyodor",,"=""""","=""""",5,3.26,,Paperback,256,,1879,,2024/01/01,"classics, favorites",,read,,,,1,0
+1048,The murder of Roger Ackroyd,Agatha Christie,"Christie, Agatha",,"=""""","=""""",4,3.50,,Paperback,460,,1926,,2024/01/01,to-read,,to-read,,,,1,0
+1049,The call of Cthulhu,H. P. (Howard Phillips) Lovecraft,"P. (Howard Phillips) Lovecraft, H.",,"=""""","=""""",2,3.68,,Paperback,418,,1926,,2024/01/01,"classics, favorites",,to-read,,,,1,0
+1050,Poirot Investigates,Agatha Christie,"Christie, Agatha",,"=""""","=""""",1,4.01,,Paperback,226,,1924,,2024/01/01,to-read,,read,,,,1,0
+1051,The Murder on the Links,Agatha Christie,"Christie, Agatha",,"=""""","=""""",3,3.30,,Paperback,270,,1923,,2024/01/01,"classics, favorites",,to-read,,,,1,0
+1052,The Turn of the Screw,Henry James,"James, Henry",,"=""""","=""""",0,4.06,,Paperback,507,,1898,,2024/01/01,classics,,read,,,,1,0
+1053,The Man in the Brown Suit,Agatha Christie,"Christie, Agatha",,"=""""","=""""",4,3.31,,Paperback,393,,1924,,2024/01/01,to-read,,to-read,,,,1,0
+1054,A Christmas Carol in Prose; Being a Ghost Story of Christmas,Charles Dickens,"Dickens, Charles",,"=""""","=""""",4,3.95,,Paperback,237,,1843,,2024/01/01,"gothic, horror",,to-read,,,,1,0
+1055,The problem of Cell 13,Jacques Futrelle,"Futrelle, Jacques",,"=""""","=""""",0,4.30,,Paperback,422,,1905,,2024/01/01,classics,,read,,,,1,0
+1056,The Time Machine,H. G. (Herbert George) Wells,"G. (Herbert George) Wells, H.",,"=""""","=""""",0,3.78,,Paperback,160,,1895,,2024/01/01,"classics, favorites",,read,,,,1,0
+1057,Carmen,Prosper Mérimée,"Mérimée, Prosper",,"=""""","=""""",4,3.79,,Paperback,238,,1845,,2024/01/01,"gothic, horror",,read,,,,1,0
+1058,Whose Body? A Lord Peter Wimsey Novel,Dorothy L. (Dorothy Leigh) Sayers,"L. (Dorothy Leigh) Sayers, Dorothy",,"=""""","=""""",5,3.54,,Paperback,225,,1923,,2024/01/01,"gothic, horror",,to-read,,,,1,0
+1059,"Changeling, and Other Stories",Donn Byrne,"Byrne, Donn",,"=""""","=""""",4,4.47,,Paperback,421,,,,2024/01/01,to-read,,to-read,,,,1,0

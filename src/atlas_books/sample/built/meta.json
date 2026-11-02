@@ -1,0 +1,11 @@
+{
+ "name": "sample",
+ "n": 2920,
+ "source": "Project Gutenberg catalog (gutenberg.org), English-language fiction with a catalog summary, top 3,000 by downloads",
+ "attribution": "Book metadata and summaries: Project Gutenberg catalog (https://www.gutenberg.org/ebooks/offline_catalogs.html). \"ratings_count\" holds Gutenberg download counts; there are no ratings.",
+ "built": "2026-11-02 14:49",
+ "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+ "with_description": 2920,
+ "with_rating": 0,
+ "description": "2,920 public-domain novels from Project Gutenberg \u00b7 mapped by description"
+}
