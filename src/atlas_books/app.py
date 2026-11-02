@@ -134,10 +134,10 @@ def summary(state,limit=15):
             'filters':filters_of(state),
             'years':None if n==0 else {'median':v['year'].median(),'p10':v['year'].quantile(.1),'p90':v['year'].quantile(.9)},
             'avg_rating':None if n==0 else (round(v['rating'].mean(),2) if v['rating'].mean() is not None else None),
-            'focus':FOCUS['book']}
+            'focus':FOCUS['book'],'recommended':[f"{r['rank']}. {r['title']}" for r in HIGHLIGHT['recs']]}
 def view_state():
     return {'figures':FIG,'state':M['state'],'fv_revision':M['fv_revision'],'rev':M['rev'],'last_change_by':M['by'],
-            'browser_connected':len(CLIENTS)>0,'recent_changes':LOG[-8:],'summary':summary(M['state'],10)}
+            'browser_connected':len(CLIENTS)>0,'recent_changes':LOG[-8:],'summary':summary(M['state'],10),'highlights':HIGHLIGHT}
 
 LOOP={}
 async def _broadcast(msg):
@@ -199,7 +199,7 @@ async def t_list_books_in_view(limit=20,offset=0):
     n,rows=books_in_view(M['state'],min(int(limit),100),int(offset)); return {'books_in_view':n,'books':rows,'sorted_by':'ratings_count desc'}
 async def t_search_book(title,limit=5): return {'matches':search(title,min(int(limit),20))}
 async def t_set_view(x_min=None,x_max=None,y_min=None,y_max=None,reset=False):
-    if reset: vp=dict(INIT['viewport']); FOCUS['book']=None
+    if reset: vp=dict(INIT['viewport']); FOCUS['book']=None; await set_recs([],by='reset',frame=False)
     else:
         if None in (x_min,x_max,y_min,y_max): raise HTTPException(400,'set_view needs x_min, x_max, y_min, y_max (or reset=true)')
         x_min,x_max=sorted([float(x_min),float(x_max)]); y_min,y_max=sorted([float(y_min),float(y_max)])
@@ -247,8 +247,48 @@ async def t_similar_books(title=None,i=None,k=10):
     return {'book':bookrow(B.row(j,named=True)),'similar':[r|{'in_current_view':r['i'] in inview} for r in res],
             'note':'similarity is cosine over all-MiniLM-L6-v2 description embeddings; map position is a 2D UMAP and does not always keep neighbours together'}
 async def t_get_user_profile(): return agent.load_profile(B)
-async def t_recommend_start(query=''): return await rec.start(B,filt(M['state']),describe(M['state']),query=query or '')
-async def t_recommend_answer(session,option): return await rec.answer(session,option)
+async def t_recommend_start(query=''): r=await rec.start(B,filt(M['state']),describe(M['state']),query=query or ''); await _wizard_recs(r); return r
+async def t_recommend_answer(session,option): r=await rec.answer(session,option); await _wizard_recs(r); return r
+# ---------- recommendation highlights (shared state): every recommended book gets a yellow ring + "rank title" tag ----------
+HIGHLIGHT={'recs':[],'by':None,'at':None}
+REC_RE=re.compile(r"\b(recommend\w*|suggest\w*|books? like|similar|what (?:should|can|could) i read|top[- ]?rated|best|good (?:books?|reads?)|must[- ]reads?|picks?|worth reading)\b",re.I)
+def _rec_row(b,k):
+    i=int(b['i']); r=B.row(i,named=True)
+    return {'rank':k+1,'i':i,'title':r['title'],'author':r['author'],'x':round(float(r['x']),6),'y':round(float(r['y']),6),'url':gr_url(i)}
+async def set_recs(books,by='assistant',frame=True):
+    """Replace the highlighted recommendations (kept until the next recommendation or a reset) and frame the view on them."""
+    recs=[_rec_row(b,k) for k,b in enumerate(books[:10]) if b and b.get('i') is not None]
+    if not recs and not HIGHLIGHT['recs']: return
+    HIGHLIGHT.update(recs=recs,by=by,at=time.time())
+    if recs: _log(by,'highlight recommendations: '+'; '.join(f"{r['rank']}. {r['title']}" for r in recs))
+    await _broadcast({'type':'recs','books':recs})
+    if frame and recs:
+        pts=[(r['x'],r['y']) for r in recs]+([(FOCUS['book']['x'],FOCUS['book']['y'])] if FOCUS['book'] else [])
+        x0,x1,y0,y1=_cur_vp(); mx,my=(x1-x0)*.08,(y1-y0)*.12
+        if not all(x0+mx<=x<=x1-mx and y0+my<=y<=y1-my for x,y in pts):
+            xs=[x for x,_ in pts]; ys=[y for _,y in pts]; cx,cy=(min(xs)+max(xs))/2,(min(ys)+max(ys))/2
+            rx=max((max(xs)-min(xs))/2*1.3,.6); ry=max((max(ys)-min(ys))/2*1.35,.45)
+            rx,ry=max(rx,ry/max(ASPECT,1e-6)*.85),max(ry,rx*ASPECT*.85)
+            await set_state({'viewport':_vp(cx,cy,rx,ry)},by=by,what='frame the recommended books')
+async def _wizard_recs(r):
+    f=(r or {}).get('final') if isinstance(r,dict) else None
+    if f and f.get('top3'): await set_recs(f['top3'],by='recommendation')
+def mention_rows(text,limit=8):
+    out=[]
+    for t in re.findall(r'\*\*([^*\n]{2,140})\*\*|\*([^*\n]{2,140})\*',text or ''):
+        t=(t[0] or t[1]).strip(); h=title_lookup(t) if len(t)>2 else None
+        if h and h['title'].strip().lower()==t.lower() and h['i'] not in [o['i'] for o in out] and not (FOCUS['book'] and h['i']==FOCUS['book']['i']): out.append(h)
+        if len(out)>=limit: break
+    return out
+async def recs_from_chat(user_text,reply,via,log):
+    """Which books did this chat turn recommend? similar_books results, or top rated / named books when the user asked for recommendations."""
+    if 'wizard' in log: return
+    picks=None
+    if 'similar_books' in log: picks=(log['similar_books'].get('similar') or [])[:5]
+    elif REC_RE.search(user_text or ''):
+        if 'top_rated_in_view' in log: picks=(log['top_rated_in_view'].get('books') or [])[:5]
+        else: picks=mention_rows(reply)[:6]
+    if picks: await set_recs(picks,by='assistant')
 
 # ---------- map navigation helpers: top rated, topics, authors, relative zoom ----------
 NX=NY=200; _XA=B['x'].to_numpy().astype(np.float64); _YA=B['y'].to_numpy().astype(np.float64)
@@ -564,7 +604,7 @@ async def events(req:Request):
     q=asyncio.Queue(); CLIENTS.add(q)
     async def gen():
         try:
-            yield f"data: {json.dumps({'type':'hello','boot':BOOT,'state':M['state'],'focus':FOCUS['book']})}\n\n"
+            yield f"data: {json.dumps({'type':'hello','boot':BOOT,'state':M['state'],'focus':FOCUS['book'],'recs':HIGHLIGHT['recs']})}\n\n"
             while True:
                 if await req.is_disconnected(): break
                 try: msg=await asyncio.wait_for(q.get(),15); yield f"data: {json.dumps(msg)}\n\n"
@@ -657,7 +697,7 @@ async def rec_start(req:Request):
     return await t_recommend_start((b or {}).get('query',''))
 @app.post('/api/rec/answer')
 async def rec_answer(req:Request):
-    b=await req.json(); return await rec.answer(b.get('session'),b.get('option'))
+    b=await req.json(); return await t_recommend_answer(b.get('session'),b.get('option'))
 def _H():
     return {'title':title_lookup,'author':author_lookup,'topic':topic_lookup,'filters':lambda:filters_of(M['state']),'top':lambda n=5:top_rated(M['state'],n)[1],
             'focus':lambda:FOCUS['book'],'full':(X0,X1,Y0,Y1),'cur_vp':_cur_vp}
@@ -670,7 +710,17 @@ def librarian_parse(q:str):
 @app.post('/api/chat')
 async def chat(req:Request):
     b=await req.json()
-    r=await agent.chat(b.get('messages',[]),tool_list(),call_tool,view_state,H=_H(),model=b.get('model'),rules=b.get('rules',True) is not False)
+    log={}
+    async def ct(name,args):
+        res=await call_tool(name,args)
+        if name in ('similar_books','top_rated_in_view') and isinstance(res,dict): log[name]=res
+        if name.startswith('recommend_'): log['wizard']=True
+        return res
+    r=await agent.chat(b.get('messages',[]),tool_list(),ct,view_state,H=_H(),model=b.get('model'),rules=b.get('rules',True) is not False)
+    try:
+        msgs=b.get('messages') or []; await recs_from_chat(msgs[-1].get('content','') if msgs else '',r.get('reply',''),r.get('via'),log)
+    except Exception as e: print('recs_from_chat',e)
+    r['recommended']=HIGHLIGHT['recs']
     try: r['links']=mention_links(r.get('reply',''))
     except Exception: r['links']={}
     return r

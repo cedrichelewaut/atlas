@@ -72,6 +72,12 @@ The human and the agent never have separate views: the agent changes the FlexViz
 external agent could call (`GET /api/tools`, `POST /api/tools/<name>`), the browser applies the patch, and acknowledges
 it, so the agent's answer is about what you actually see.
 
+Highlights are part of that shared state too: a book you look up (search, "show me X") gets an orange ring and
+title tag; every book Atlas AI recommends (chat answers or the final picks of the recommendation questions) gets a
+yellow ring and a ranked tag. Recommendation highlights stay until the next recommendation or *Reset view*, the view
+is framed so all picks are visible, the agent sees them in `view_state` (`highlights`, `summary.recommended`), and
+clicking a ringed book still opens its link.
+
 ## Data, licence and attribution
 
 - Code: **MIT** (see `LICENSE`). FlexViz is Apache-2.0 and installed from PyPI, not vendored.

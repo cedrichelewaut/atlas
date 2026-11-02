@@ -209,7 +209,7 @@ function chips(r){const c=[];const st=r.state||{};
  if(focus)c.push(`<span class="chip focus">★ ${esc(focus.title)}</span>`);$('#ctx').innerHTML=c.join('')}
 function render(r){$('#cnt').textContent=fmt(r.books_in_view);
  const w=$('#who');w.textContent=r.by==='human'?'Last change: you':r.by==='agent'?'Last change: assistant':r.by==='external'?'Last change: API':'Default view';
- if(r.focus)focus=r.focus;chips(r);renderTop(r.top_rated||[])}
+ if(r.focus)focus=r.focus;if(r.highlights)setRecs(r.highlights.recs);chips(r);renderTop(r.top_rated||[])}
 const GR_SVG='<svg width=11 height=11 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2.6 stroke-linecap=round stroke-linejoin=round aria-hidden=true><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
 function grUrl(b){return b&&(b.url||(b.i!=null?'/go/book/'+b.i:null))}
 function grLink(url,cls=''){return url?`<a class="gr ${cls}" href="${esc(url)}" target=_blank rel="noopener noreferrer" title="Open the book page" aria-label="Open the book page">${GR_SVG}</a>`:''}
@@ -240,6 +240,28 @@ function focusPt(){if(!focus)return null;if(PT.ready){if(PT.fi==null||PT.fid!==f
   if(PT.fi>=0){const j=PT.fi;return{x:PT.x[j],y:PT.y[j],j,hs:focusSize(PT.votes[j])}}}
  return{x:focus.x,y:focus.y,j:-1,hs:focusSize(Math.log10((focus.ratings_count||0)+1)*1000)}}
 function focusSize(v){return Math.max(16,1.6*(2.5+1.5*v/1000))}   // CSS px diameter of the highlighted dot (shader uses the same formula)
+// --- recommendation highlights (shared state, server HIGHLIGHT.recs): yellow ring + "rank title" tag per pick, placed so tags never overlap ---
+let RECS=[];RECS.key='';
+function setRecs(a){a=Array.isArray(a)?a:[];const k=a.map(r=>r.i).join(',');if(k===RECS.key)return;RECS=a;RECS.key=k;window.__recs=a.map(r=>({rank:r.rank,i:r.i,title:r.title}));const gd=mapDiv();if(gd)gd.__fvxR=null;marker()}
+function recDot(r){if(PT.ready){if(r.__j==null){r.__j=-1;for(let j=PT.n-1;j>=0;j--)if(PT.i[j]===r.i){r.__j=j;break}}if(r.__j>=0)return focusSize(PT.votes[r.__j])}return 16}
+const ovl=(a,b)=>a[0]<b[2]&&a[2]>b[0]&&a[1]<b[3]&&a[3]>b[1];
+function annBox(gd,a){const L=gd._fullLayout,px=L.xaxis.l2p(a.x),py=L.yaxis.l2p(a.y),fs=(a.font&&a.font.size)||12,t=String(a.text||'').replace(/<[^>]+>/g,''),w=t.length*fs*.58+16,h=fs+12,cx=px+(a.showarrow?(a.ax||0):0),cy=py+(a.showarrow?(a.ay||0):0);return[cx-w/2,cy-h/2,cx+w/2,cy+h/2]}
+function recAnn(gd,avoid){if(!RECS.length||!gd||!gd._fullLayout||!gd._fullLayout.xaxis)return[[],[],[]];
+ const L=gd._fullLayout,xa=L.xaxis,ya=L.yaxis,W0=L._size.w,H0=L._size.h,fs=11.5,boxes=avoid.slice(),placed=[],ann=[],sh=[];
+ const P=RECS.map(r=>{const R=recDot(r)/2+5;return{r,R,px:xa.l2p(r.x),py:ya.l2p(r.y)}});
+ const dr=gd.querySelector('.nsewdrag'),lg=gd.querySelector('.fvx-legend');if(dr&&lg&&lg.offsetParent!==null){const D=dr.getBoundingClientRect(),G=lg.getBoundingClientRect();boxes.push([G.left-D.left-4,G.top-D.top-4,G.right-D.left+4,G.bottom-D.top+4])}   // keep tags off the legend
+ for(const p of P)boxes.push([p.px-p.R-3,p.py-p.R-3,p.px+p.R+3,p.py+p.R+3]);         // labels never cover another pick
+ const C=[[1,-1],[-1,-1],[1,1],[-1,1],[0,-1.4],[0,1.4],[1.3,0],[-1.3,0],[1.8,-2],[-1.8,-2],[1.8,2],[-1.8,2],[0,-2.6],[0,2.6],[2.6,-1],[-2.6,-1],[2.6,1],[-2.6,1],[0,-3.8],[0,3.8]];
+ for(const p of P){const tt=p.r.title.length>30?p.r.title.slice(0,28)+'…':p.r.title,txt=`<b>${p.r.rank}</b>  ${esc(tt)}`,w=(String(p.r.rank).length+2+tt.length)*fs*.58+16,h=fs+12;let best=null,bs=1e9;
+  for(const[cx,cy] of C){const dx=cx?Math.sign(cx)*(p.R+14+w/2)*Math.abs(cx)**.6:0,dy=cy*(p.R+10+h/2),b=[p.px+dx-w/2,p.py+dy-h/2,p.px+dx+w/2,p.py+dy+h/2];
+   const out=(b[0]<2||b[1]<2||b[2]>W0-2||b[3]>H0-2)?3:0,hits=boxes.filter(o=>ovl(o,b)).length+out;if(hits<bs){bs=hits;best={dx,dy,b}}if(!hits)break}
+  boxes.push(best.b);placed.push(best.b);
+  ann.push({name:'rec',x:p.r.x,y:p.r.y,xref:'x',yref:'y',text:txt,showarrow:true,arrowhead:0,arrowcolor:'#a16207',arrowwidth:1.5,ax:Math.round(best.dx),ay:Math.round(best.dy),standoff:p.R+1,
+   font:{family:'Inter',color:'#1c1917',size:fs},bgcolor:'#facc15',bordercolor:'#a16207',borderwidth:1,borderpad:4,hovertext:p.r.author?esc(p.r.title)+' · '+esc(p.r.author):undefined});
+  sh.push({type:'circle',xref:'x',yref:'y',xsizemode:'pixel',ysizemode:'pixel',xanchor:p.r.x,yanchor:p.r.y,x0:-p.R-3,x1:p.R+3,y0:-p.R-3,y1:p.R+3,line:{color:'rgba(255,255,255,.95)',width:3},fillcolor:'rgba(250,204,21,.16)',layer:'above'},
+          {type:'circle',xref:'x',yref:'y',xsizemode:'pixel',ysizemode:'pixel',xanchor:p.r.x,yanchor:p.r.y,x0:-p.R,x1:p.R,y0:-p.R,y1:p.R,line:{color:'#eab308',width:2.5},fillcolor:'rgba(0,0,0,0)',layer:'above'},
+          {type:'circle',xref:'x',yref:'y',xsizemode:'pixel',ysizemode:'pixel',xanchor:p.r.x,yanchor:p.r.y,x0:-p.R-1.6,x1:p.R+1.6,y0:-p.R-1.6,y1:p.R+1.6,line:{color:'rgba(113,63,18,.55)',width:.8},fillcolor:'rgba(0,0,0,0)',layer:'above'})}
+ return[ann,sh,placed]}
 function focusAnn(){const f=focusPt();if(!f)return[[],[]];const R=f.hs/2+5;
  return[[{name:'focus',x:f.x,y:f.y,xref:'x',yref:'y',text:esc(focus.title.length>34?focus.title.slice(0,32)+'…':focus.title)+(focus.rating?` ★${(+focus.rating).toFixed(2)}`:''),showarrow:true,arrowhead:0,arrowcolor:'#d97706',arrowwidth:1.5,ax:Math.round(R+28),ay:-Math.round(R+22),standoff:R,
    font:{family:'Inter',color:'#fff',size:11},bgcolor:'#d97706',bordercolor:'#d97706',borderpad:4}],
@@ -316,15 +338,16 @@ async function fetchOverlay(gd,key){const L=gd._fullLayout;const[x0,x1]=L.xaxis.
 async function applyLayer(gd){if(!gd||ML.applying)return;ML.applying=true;
  try{const H=gd.data.map((t,j)=>t.type==='heatmap'?j:-1).filter(j=>j>=0);
   if(H.some(h=>gd.data[h].hoverinfo!=='none'||gd.data[h].showscale!==false||gd.data[h].opacity!==0))await prog(()=>W.Plotly.restyle(gd,{hoverinfo:'none',hovertemplate:[null],showscale:false,opacity:0},H));
-  const[fa,fs]=focusAnn();const ann=(ML.data?placeLabels(gd,ML.data.labels,ML.full):[]).concat(fa);const sig=JSON.stringify(ann.map(a=>[a.text,a.x,a.y]))+JSON.stringify(fs);
-  const has=(gd.layout.annotations||[]).some(a=>a.name==='fvx-label'||a.name==='focus');
-  if(gd.__fvxSig!==sig||has!==!!ann.length){await prog(()=>W.Plotly.relayout(gd,{annotations:ann,shapes:fs}));gd.__fvxSig=sig}
+  const[fa,fs]=focusAnn();const[ra,rs,rb]=recAnn(gd,fa.map(a=>annBox(gd,a)));let base=ML.data?placeLabels(gd,ML.data.labels,ML.full):[];if(rb.length)base=base.filter(a=>{const b=annBox(gd,a);return!rb.some(o=>ovl(o,b))});
+  const ann=base.concat(ra,fa),shp=rs.concat(fs);const sig=JSON.stringify(ann.map(a=>[a.text,a.x,a.y,a.ax,a.ay]))+JSON.stringify(shp);
+  const has=(gd.layout.annotations||[]).some(a=>a.name==='fvx-label'||a.name==='focus'||a.name==='rec');
+  if(gd.__fvxSig!==sig||has!==!!ann.length){await prog(()=>W.Plotly.relayout(gd,{annotations:ann,shapes:shp}));gd.__fvxSig=sig}
   legend(gd);window.__mapLayer={points:PT.vis,labels:ann.length,in_view:ML.data&&ML.data.in_view,all:true}}catch(e){console.warn('map layer',e)}finally{ML.applying=false}}
 function marker(){const gd=mapDiv();if(!gd||!W.Plotly||!gd._fullLayout||!gd._fullLayout.xaxis)return;bindMap(gd);
  if(PT.ready){if(PT.fkey!==lastKey){PT.fkey=lastKey;applyFilter()}if(glEnsure(gd))draw(gd)}
  const key=viewKey(gd);if(key!==ML.key&&ML.fetching!==key){clearTimeout(ML.t);ML.t=setTimeout(()=>fetchOverlay(gd,key),90)}
  const[fa]=focusAnn();const anns=gd.layout.annotations||[];const hasF=anns.some(a=>a.name==='focus');
- if(gd.data.some(t=>t.type==='heatmap'&&(t.hoverinfo!=='none'||t.showscale!==false||t.opacity!==0))||(ML.data&&ML.data.labels.length&&!anns.some(a=>a.name==='fvx-label'))||hasF!==!!fa.length||(focus&&gd.__fvxF!==focus.i)||!gd.querySelector('.fvx-legend')){gd.__fvxF=focus&&focus.i;gd.__fvxSig=null;applyLayer(gd)}}
+ if(gd.data.some(t=>t.type==='heatmap'&&(t.hoverinfo!=='none'||t.showscale!==false||t.opacity!==0))||(ML.data&&ML.data.labels.length&&!anns.some(a=>a.name==='fvx-label'))||hasF!==!!fa.length||(focus&&gd.__fvxF!==focus.i)||gd.__fvxR!==(RECS.length?RECS.key+'@'+key:'')||!gd.querySelector('.fvx-legend')){gd.__fvxF=focus&&focus.i;gd.__fvxR=RECS.length?RECS.key+'@'+key:'';gd.__fvxSig=null;applyLayer(gd)}}
 // --- range sliders under the map: they read and write the ONE FlexViz state (selections on the hidden year/rating/pages/ratings figures) ---
 const SL=[{k:'year',col:'year',fig:'year',nm:'Publication year',min:1980,max:2025,step:1,f:v=>String(Math.round(v)),hint:''},
  {k:'rating',col:'rating',fig:'rating',nm:'Average rating',min:1,max:5,step:0.05,f:v=>v.toFixed(2),hint:''},
@@ -372,6 +395,7 @@ function bookTip(j,ev){const i=PT.i[j],b=BK[i];const lab=c=>(c||'').split(' ').s
   <div class=tb>${b?esc(b.blurb||'No description available.'):'<span class=ld>Loading description…</span>'}</div><div class=tgr><b>↗</b> Click to open the book page</div>`,ev);
  ML.tip='b'+i;if(!b&&!BK['_'+i]){BK['_'+i]=1;fetch('/api/book/'+i).then(r=>r.json()).then(r=>{BK[i]=r;if(ML.tip==='b'+i&&ML.ev)bookTip(j,ML.ev)})}}
 function pickDot(gd,px,py){const L=gd._fullLayout,xa=L.xaxis,ya=L.yaxis,S=L._size,g=PT.grid,zs=GL.zs||1;
+ const fp=focusPt();for(const j of RECS.map(r=>(recDot(r),r.__j)).concat(fp?[fp.j]:[]))if(j!=null&&j>=0&&PT.mask[j]&&Math.hypot(xa.l2p(PT.x[j])-px,ya.l2p(PT.y[j])-py)<=focusSize(PT.votes[j])/2+5)return j;   // a ringed (recommended / focused) book wins inside its ring
  const sx=Math.abs(xa.range[1]-xa.range[0])/S.w,sy=Math.abs(ya.range[1]-ya.range[0])/S.h,xv=xa.p2l(px),yv=ya.p2l(py),R=Math.max(6,(2.5+1.5*6.5)*zs/2+2);
  const cx0=Math.max(0,((xv-R*sx-g.x0)*g.sx)|0),cx1=Math.min(g.G-1,((xv+R*sx-g.x0)*g.sx)|0),cy0=Math.max(0,((yv-R*sy-g.y0)*g.sy)|0),cy1=Math.min(g.G-1,((yv+R*sy-g.y0)*g.sy)|0);
  let inside=-1,near=-1,nd=R;for(let cy=cy0;cy<=cy1;cy++)for(let cx=cx0;cx<=cx1;cx++){const c=cy*g.G+cx;for(let q=g.start[c];q<g.start[c+1];q++){const j=g.idx[q];if(!PT.mask[j])continue;
@@ -391,6 +415,7 @@ function openGoodreads(i){const b=BK[i];const u=(b&&b.url)||('/go/book/'+i);wind
 function setSync(ok,txt){const s=$('#sync');s.querySelector('.dot').className='dot'+(ok?' live':'');s.lastChild.textContent=txt}
 function sse(){const es=new EventSource('/api/events');es.onopen=()=>setSync(true,'Live · synced');es.onerror=()=>setSync(false,'Reconnecting…');
  es.onmessage=async e=>{const m=JSON.parse(e.data);if(m.type==='hello'&&m.boot){if(window.__boot&&window.__boot!==m.boot){location.reload();return}window.__boot=m.boot}if(m.type==='apply'&&W)await applyPatch(m.patch,m.id);
+  if(m.type==='recs')setRecs(m.books);if(m.type==='hello'&&m.recs)setRecs(m.recs);
   if(m.type==='focus'){focus=m.book;marker();document.querySelectorAll('#toplist .bk').forEach(t=>t.classList.toggle('sel',!!focus&&+t.dataset.i===focus.i))}}}
 function sizeMap(){const st=$('#stage'),mw=$('#mapwrap');const h=st.clientHeight-$('#filters').offsetHeight-72;mw.style.height=Math.max(260,h)+'px'}
 function fitMap(){try{const d=W&&W.document.getElementById('fv-dashboard');if(!d)return;const b=Math.ceil(d.getBoundingClientRect().bottom)+6;const mw=$('#mapwrap');if(b>120&&b<mw.clientHeight)mw.style.height=b+'px'}catch(e){}}
