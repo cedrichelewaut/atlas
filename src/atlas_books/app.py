@@ -703,7 +703,6 @@ def _H():
             'focus':lambda:FOCUS['book'],'full':(X0,X1,Y0,Y1),'cur_vp':_cur_vp}
 @app.get('/api/librarian/parse')
 def librarian_parse(q:str):
-    import librarian
     p=librarian.parse(q,_H())
     return {'recognised':librarian.recognised(p),'filters':p.f,'remove':sorted(p.remove),'clear':p.clear,'view':p.view,'zoom':p.zoom,'pan':p.pan,
             'focus':p.focus and p.focus['title'],'like':p.like and p.like['title'],'author':p.author,'topic':p.topic,'ask':p.ask,'wizard':p.wizard,'leftover':p.t.strip()}
