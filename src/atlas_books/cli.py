@@ -18,11 +18,23 @@ from . import paths, __version__
 
 
 def _serve(data: Path, host: str, port: int, open_browser: bool):
+    from . import security
+
     os.environ["ATLAS_DATA"] = str(data)
+    os.environ["ATLAS_BIND_HOST"] = host
     import uvicorn
 
     url = f"http://{host if host not in ('0.0.0.0', '::') else '127.0.0.1'}:{port}/"
+    if not security.is_loopback(host):
+        print(
+            f"WARNING: Atlas is listening on {host}, so anyone who can reach this machine on port {port} can open your map, "
+            "read your reading profile and use Atlas AI. Atlas has no login; use --host 127.0.0.1 unless you mean it.",
+            file=sys.stderr,
+            flush=True,
+        )
+    tok = security.write_token_file(paths.home())
     print(f"Atlas: serving {data.name} at {url}  (Ctrl+C to stop)", flush=True)
+    print(f"       external agents: send header X-Atlas-Token from {tok} on POST /api/...", flush=True)
     if open_browser:
         threading.Timer(2.5, lambda: webbrowser.open(url)).start()
     uvicorn.run("atlas_books.app:app", host=host, port=port, log_level="warning")

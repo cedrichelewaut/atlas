@@ -14,7 +14,7 @@ from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse, Red
 import flexviz as _fv
 from flexviz import mount_into
 from . import store, paths
-from . import agent, rec, librarian
+from . import agent, rec, librarian, security
 from .state import (
     ACK,
     B,
@@ -59,6 +59,7 @@ from .tools import (
 # ---------- HTTP ----------
 app = FastAPI(title="Atlas")
 mount_into(app, "/flexviz")
+app.add_middleware(security.Guard)  # same-origin + JSON + per-launch token on POSTs, Host check (see security.py)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -75,7 +76,8 @@ def index():
         )
     if not B["pages"].is_not_null().any():
         h = h.replace("under 300 pages", "before 1900").replace("Under 300 pages", "Before 1900")
-    return h
+    h = h.replace("<head>", f'<head><meta name="atlas-token" content="{security.TOKEN}">', 1)
+    return HTMLResponse(h, headers={"Cache-Control": "no-store"})
 
 
 @app.get("/api/config")
@@ -198,13 +200,15 @@ async def lib_model_set(req: Request):
     if kind == "default":  # back to the server default (local Ollama, AGENT_MODEL); no test call
         agent.save_conf({"kind": "ollama", "model": None, "base_url": None, "api_key": None})
         return _model_state({"saved": True})
+    warning = None
     if kind == "ollama":
         d = {"kind": "ollama", "model": str(b.get("model") or ""), "base_url": None, "api_key": None}
     elif kind == "openai":
         base = str(b.get("base_url") or "").strip().rstrip("/")
         model = str(b.get("model") or "").strip()
-        if not re.match(r"^https?://[^\s/]+", base):
-            raise HTTPException(400, "base URL must start with http:// or https://")
+        err, warning = security.check_llm_url(base)
+        if err:
+            raise HTTPException(400, err)
         if not model:
             raise HTTPException(400, "model name is required")
         key = b.get("api_key")
@@ -216,7 +220,9 @@ async def lib_model_set(req: Request):
     t = await agent.test_model(d)
     if t["ok"]:
         agent.save_conf(d)
-    return _model_state({"test": t, "saved": t["ok"]})
+    if warning:
+        print(f"Atlas AI model endpoint: {warning}", flush=True)
+    return _model_state({"test": t, "saved": t["ok"]} | ({"warning": warning} if warning else {}))
 
 
 @app.post("/api/librarian/model/test")

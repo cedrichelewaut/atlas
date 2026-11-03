@@ -176,6 +176,8 @@ aside{display:flex!important;flex-direction:column}
  </aside>
 </main></div>
 <script>
+// Every POST to /api/* carries the per-launch token from <meta name=atlas-token> and a JSON content type (security.py).
+(()=>{const T=document.querySelector('meta[name=atlas-token]')?.content||'';const f=window.fetch.bind(window);window.fetch=(u,o={})=>{const m=(o.method||'GET').toUpperCase();if(m!=='GET'&&m!=='HEAD'&&typeof u==='string'&&u.startsWith('/api/'))o={...o,headers:{'Content-Type':'application/json',...(o.headers||{}),'X-Atlas-Token':T}};return f(u,o)}})();
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt=n=>n==null?'—':n.toLocaleString('en'),kfmt=n=>n==null?'':n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(n>=1e4?0:1)+'k':String(n);
 let W=null,lastKey=null,focus=null,busy=false,msgs=[],FIGS={},thinking=false;
@@ -471,7 +473,7 @@ function fillModels(st){MS.st=st;const c=st.current,ms=st.ollama.models||[];let 
 function showTest(t,c){if(!t)return;if(t.ok)mstat('ok',`Connected · ${t.latency_s}s`,`${c.model} answered a test call in ${t.latency_s}s`);else mstat('err','Error',t.error||'failed')}
 async function loadModels(){try{fillModels(await fetch('/api/librarian/model').then(r=>r.json()))}catch(e){mstat('err','Error','could not load models')}}
 async function setModel(body,label){mstat('busy','Testing…');let st;try{const r=await fetch('/api/librarian/model',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});st=await r.json();if(!r.ok)st={test:{ok:false,error:st.detail||('HTTP '+r.status)}}}catch(e){st={test:{ok:false,error:'network error'}}}
- if(st.current)fillModels(st);showTest(st.test,st.current||{});window.__modelSet=st;
+ if(st.current)fillModels(st);showTest(st.test,st.current||{});window.__modelSet=st;if(st.warning)note('⚠️ '+esc(st.warning));
  if(st.saved)note(`Atlas AI now answers with <b>${esc(st.current.model)}</b>${st.current.kind==='openai'?' via '+esc(hostOf(st.current.base_url)):' (local)'}. Map commands like <i>zoom out</i> are still handled instantly without the model.`);return st}
 function note(h){$('#welcome')?.remove();add('b sys',`<div class=bub>${h}</div>`)}
 $('#msel').onchange=async e=>{const v=e.target.value;if(v==='__connect'){openConnect();return}if(v==='custom'){const c=MS.st.current;await setModel({kind:'openai',base_url:c.base_url,model:c.model});return}
