@@ -7,6 +7,7 @@ ATLAS_HOME (default ~/.atlas)            settings + your datasets
   user_profile.md                        your reading profile (edited in the Profile tab)
   goodreads_library_export.csv           optional: your Goodreads export, used by the profile
 """
+
 import os
 from pathlib import Path
 

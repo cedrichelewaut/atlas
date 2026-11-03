@@ -1,6 +1,9 @@
 """Loads one built dataset for the app (see build.py for the format)."""
-import json, os
-import numpy as np, polars as pl
+
+import json
+import os
+import numpy as np
+import polars as pl
 from . import paths
 
 DATA = str(paths.data_dir())
@@ -12,8 +15,16 @@ EXTRA = f"{DATA}/extra.parquet"
 
 def books() -> pl.DataFrame:
     B = pl.read_parquet(f"{DATA}/books.parquet").sort("i")
-    for c, t in (("year", pl.Int64), ("rating", pl.Float64), ("ratings_count", pl.Int64), ("pages", pl.Int32),
-                 ("genre", pl.Utf8), ("cluster", pl.Utf8), ("cluster_label", pl.Utf8), ("url", pl.Utf8)):
+    for c, t in (
+        ("year", pl.Int64),
+        ("rating", pl.Float64),
+        ("ratings_count", pl.Int64),
+        ("pages", pl.Int32),
+        ("genre", pl.Utf8),
+        ("cluster", pl.Utf8),
+        ("cluster_label", pl.Utf8),
+        ("url", pl.Utf8),
+    ):
         if c not in B.columns:
             B = B.with_columns(pl.lit(None, dtype=t).alias(c))
     return B

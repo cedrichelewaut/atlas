@@ -1,12 +1,18 @@
 """atlas: map your books and explore them with Atlas AI.
 
-  atlas demo                         open the bundled sample (3,000 public-domain novels from Project Gutenberg)
-  atlas import books.csv             build a map from your own list (Goodreads export, CSV, JSON, Parquet)
-  atlas import --hf user/dataset     ... or from a Hugging Face dataset you have access to
-  atlas serve                        open the current dataset in the browser
-  atlas list | atlas use NAME        switch between imported datasets
+atlas demo                         open the bundled sample (3,000 public-domain novels from Project Gutenberg)
+atlas import books.csv             build a map from your own list (Goodreads export, CSV, JSON, Parquet)
+atlas import --hf user/dataset     ... or from a Hugging Face dataset you have access to
+atlas serve                        open the current dataset in the browser
+atlas list | atlas use NAME        switch between imported datasets
 """
-import argparse, os, re, sys, webbrowser, threading
+
+import argparse
+import os
+import re
+import sys
+import webbrowser
+import threading
 from pathlib import Path
 from . import paths, __version__
 
@@ -14,6 +20,7 @@ from . import paths, __version__
 def _serve(data: Path, host: str, port: int, open_browser: bool):
     os.environ["ATLAS_DATA"] = str(data)
     import uvicorn
+
     url = f"http://{host if host not in ('0.0.0.0', '::') else '127.0.0.1'}:{port}/"
     print(f"Atlas: serving {data.name} at {url}  (Ctrl+C to stop)", flush=True)
     if open_browser:
@@ -23,6 +30,7 @@ def _serve(data: Path, host: str, port: int, open_browser: bool):
 
 def cmd_import(a):
     from . import build
+
     if a.hf:
         rows = build.read_hf(a.hf, a.hf_file)
         source = f"huggingface:{a.hf}"
@@ -43,7 +51,9 @@ def cmd_import(a):
     if df.height < 5:
         sys.exit(f"only {df.height} usable rows; Atlas needs at least 5 books")
     kind = "Goodreads library" if build.is_goodreads_export(rows) else "books"
-    out = build.build(df, paths.datasets() / name, name, source, description=f"{df.height:,} {kind} from {source} · mapped by description")
+    out = build.build(
+        df, paths.datasets() / name, name, source, description=f"{df.height:,} {kind} from {source} · mapped by description"
+    )
     if not a.no_switch:
         paths.set_current(name)
     print(f"\nImported {df.height:,} books as '{name}'.  Next: atlas serve", flush=True)
@@ -71,6 +81,7 @@ def cmd_list(a):
     print(f"sample (bundled){'   <- current' if not cur else ''}")
     for d in rows:
         import json
+
         m = json.load(open(d / "meta.json")) if (d / "meta.json").exists() else {}
         print(f"{d.name:24s} {m.get('n', '?'):>8} books  {m.get('source', '')}{'   <- current' if d.name == cur else ''}")
 
@@ -101,7 +112,9 @@ def main(argv=None):
     p.add_argument("--hf", metavar="USER/DATASET", help="read from a Hugging Face dataset (uses $HF_TOKEN if set)")
     p.add_argument("--hf-file", help="a specific file inside the HF dataset")
     p.add_argument("--name", help="dataset name (default: from the file name)")
-    p.add_argument("--map", action="append", metavar="FIELD=COLUMN", help="column mapping, e.g. --map description=Blurb (repeatable)")
+    p.add_argument(
+        "--map", action="append", metavar="FIELD=COLUMN", help="column mapping, e.g. --map description=Blurb (repeatable)"
+    )
     p.add_argument("--limit", type=int, help="keep only the N most-rated books")
     p.add_argument("--no-switch", action="store_true", help="don't make it the current dataset")
     p.add_argument("--serve", action="store_true", help="start the server when done")

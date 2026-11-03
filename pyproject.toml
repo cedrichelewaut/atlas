@@ -47,3 +47,17 @@ packages = ["src/atlas_books"]
 
 [tool.hatch.build.targets.sdist]
 include = ["src/atlas_books", "README.md", "LICENSE", "NOTICE.md", "tests", "install.sh", "Dockerfile"]
+
+[tool.ruff]
+line-length = 130
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "W", "B006", "B008"]
+ignore = [
+  "E731",  # small lambdas assigned to names are used on purpose (polars expression helpers)
+  "E741",  # I / l are conventional names here (integral images, list comprehensions)
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
