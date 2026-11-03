@@ -10,6 +10,7 @@ atlas list | atlas use NAME        switch between imported datasets
 import argparse
 import os
 import re
+import socket
 import sys
 import webbrowser
 import threading
@@ -17,8 +18,30 @@ from pathlib import Path
 from . import paths, __version__
 
 
-def _serve(data: Path, host: str, port: int, open_browser: bool):
+def _port_free(host: str, port: int) -> bool:
+    fam = socket.AF_INET6 if ":" in host else socket.AF_INET
+    with socket.socket(fam, socket.SOCK_STREAM) as s:
+        try:
+            s.bind((host, port))
+            return True
+        except OSError:
+            return False
+
+
+def _pick_port(host: str, port: int, tries: int = 20) -> int:
+    """`port` if it is free, else the next free one (with a message saying so)."""
+    for p in range(port, port + tries):
+        if _port_free(host, p):
+            if p != port:
+                print(f"Atlas: port {port} is already in use (another Atlas or app?), using {p} instead.", flush=True)
+            return p
+    sys.exit(f"ports {port}-{port + tries - 1} are all in use; pick one with --port")
+
+
+def _serve(data: Path, host: str, port: int, open_browser: bool, label: str | None = None):
     from . import security
+
+    port = _pick_port(host, port)
 
     os.environ["ATLAS_DATA"] = str(data)
     os.environ["ATLAS_BIND_HOST"] = host
@@ -33,7 +56,7 @@ def _serve(data: Path, host: str, port: int, open_browser: bool):
             flush=True,
         )
     tok = security.write_token_file(paths.home())
-    print(f"Atlas: serving {data.name} at {url}  (Ctrl+C to stop)", flush=True)
+    print(f"Atlas: serving {label or data.name} at {url}  (Ctrl+C to stop)", flush=True)
     print(f"       external agents: send header X-Atlas-Token from {tok} on POST /api/...", flush=True)
     if open_browser:
         threading.Timer(2.5, lambda: webbrowser.open(url)).start()
@@ -80,11 +103,11 @@ def cmd_serve(a):
             sys.exit(f"no dataset '{a.dataset}' (see: atlas list)")
     else:
         d = paths.data_dir()
-    _serve(d, a.host, a.port, not a.no_browser)
+    _serve(d, a.host, a.port, not a.no_browser, label="sample" if d == paths.SAMPLE_BUILT else None)
 
 
 def cmd_demo(a):
-    _serve(paths.SAMPLE_BUILT, a.host, a.port, not a.no_browser)
+    _serve(paths.SAMPLE_BUILT, a.host, a.port, not a.no_browser, label="sample")
 
 
 def cmd_list(a):

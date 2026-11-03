@@ -12,6 +12,7 @@ Works from ~50 to ~500k books (UMAP is fitted on a 150k sample above that size a
 
 from __future__ import annotations
 import csv
+import warnings
 import io
 import json
 import math
@@ -24,6 +25,7 @@ from pathlib import Path
 import numpy as np
 import polars as pl
 
+from . import paths
 from .textprep import book_text
 
 TEXT_RECIPE = "title + tags + description without marketing fluff (textprep v1)"
@@ -284,7 +286,10 @@ def embed(texts: list[str], batch: int = 32) -> np.ndarray:
     try:
         from fastembed import TextEmbedding
 
-        m = TextEmbedding(MODEL)
+        cache = paths.models()
+        if not any(cache.iterdir()):
+            log(f"first import: downloading the embedding model {MODEL} (~65 MB) to {cache} ...")
+        m = TextEmbedding(MODEL, cache_dir=str(cache))
         tok = getattr(getattr(m, "model", None), "tokenizer", None)
         if tok is not None:
             tok.enable_truncation(max_length=MAX_TOKENS)
@@ -324,6 +329,9 @@ def layout(V: np.ndarray, seed: int = 42) -> np.ndarray:
         _, _, vt = np.linalg.svd(X, full_matrices=False)
         return (X @ vt[:2].T).astype(np.float32) * 10
     import umap  # imported late (slow import)
+
+    # random_state makes the layout reproducible; UMAP then warns on every run that it runs single-threaded
+    warnings.filterwarnings("ignore", message=r"n_jobs value .* overridden", category=UserWarning)
 
     nn = int(min(15, max(2, n // 4)))
     fit_n = int(os.environ.get("ATLAS_UMAP_FIT_N", "150000"))  # above this, fit on a sample and project the rest

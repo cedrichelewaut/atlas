@@ -29,6 +29,11 @@ Docker: `docker build -t atlas . && docker run -p 8010:8010 atlas`
 
 `--pre` is needed because Atlas depends on [FlexViz](https://flexviz.tech) `0.1.0b5`, which is a beta on PyPI.
 
+**What to expect:** the install pulls about **900 MB** of dependencies (UMAP/numba, SciPy, ONNX Runtime) and takes
+under a minute with uv. `atlas demo` needs nothing else. The first `atlas import` downloads the ~65 MB
+`bge-small-en-v1.5` embedding model into `~/.atlas/models/` (once; `FASTEMBED_CACHE_PATH` moves it). If port 8010 is
+taken, Atlas picks the next free port and says so.
+
 ## Importing your books
 
 `atlas import <file>` reads:

@@ -2,6 +2,8 @@
 
 ATLAS_HOME (default ~/.atlas)            settings + your datasets
   datasets/<name>/                       built map data (books.parquet, extra.parquet, vecs_i8.npy, vecs_scale.npy, meta.json)
+  models/                                embedding model downloaded on the first `atlas import` (~65 MB)
+  api_token                              per-launch token for POST /api/... (0600)
   current                                name of the dataset `atlas serve` opens
   librarian_model.json                   Atlas AI model choice (0600; may hold an API key; never leaves the server in full)
   user_profile.md                        your reading profile (edited in the Profile tab)
@@ -21,6 +23,13 @@ def home() -> Path:
     h = Path(os.environ.get("ATLAS_HOME", Path.home() / ".atlas")).expanduser()
     h.mkdir(parents=True, exist_ok=True)
     return h
+
+
+def models() -> Path:
+    """Embedding models downloaded by `atlas import` (fastembed cache); survives reboots, unlike fastembed's /tmp default."""
+    d = Path(os.environ.get("FASTEMBED_CACHE_PATH") or home() / "models").expanduser()
+    d.mkdir(parents=True, exist_ok=True)
+    return d
 
 
 def datasets() -> Path:
