@@ -28,7 +28,7 @@ FLUFF = re.compile(
     re.I,
 )
 JUNK = re.compile(
-    r"to-?read|currently|favou?rite|fave|own|kindle|nook|library|wish|default|e-?books?|^books?|^read|tbr|audio|finished|abandon|dnf|did-not|^my-|^fiction$|^novels?$|^novel$|general|shelfari|^\d{4}|-\d{4}$|20\d\d|19\d\d|challenge|giveaway|netgalley|arc$|^arcs?|first-?reads|review|bought|purchased|borrowed|kobo|scribd|amazon|freebie|free|^series$|^re-?read|want|maybe|someday|^fic$|tbr|on-hold|unread|^paused|^p$|^ya-?lit$|^book-?club|club|^stand-?alone|^paperback|^hardcover|^signed|^physical|cover|^not-|^i-|^have|^\w$|recommended|recommendation|^5-?stars?|stars|^loved|^liked|^meh|^dropped|^gave-up|default|^adult$|^english|^usa$|^uk$|bookshelf|^shelf|^to-buy|sale|bargain|^z-|^x-|^a-|^my|^fiction-|shelf|audible|guilty|must-?read|best-?books|ever$|faves?$|^loved?$|keeper|^y-a$|^e-|^on-|^in-|^ku$|^owned",
+    r"to-?read|currently|favou?rite|fave|own|kindle|nook|library|wish|default|e-?books?|^books?|^read|tbr|audio|finished|abandon|dnf|did-not|^my-|^fiction$|^novels?$|^novel$|general|shelfari|^\d{4}|-\d{4}$|20\d\d|19\d\d|challenge|giveaway|netgalley|arc$|^arcs?|first-?reads|review|bought|purchased|borrowed|kobo|scribd|amazon|freebie|free|^series$|^re-?read|want|maybe|someday|^fic$|tbr|on-hold|unread|^paused|^p$|^ya-?lit$|^book-?club|club|^stand-?alone|^paperback|^hardcover|^signed|^physical|cover|^not-|^i-|^have|^\w$|recommended|recommendation|^5-?stars?|stars|^loved|^liked|^meh|^dropped|^gave-up|default|^adult$|^english|^usa$|^uk$|bookshelf|^shelf|^to-buy|sale|bargain|^z-|^x-|^a-|^my$|^fiction-|shelf|audible|guilty|must-?read|best-?books|ever$|faves?$|^loved?$|keeper|^y-a$|^e-|^on-|^in-|^ku$|^owned",
     re.I,
 )
 CLAUSE = re.compile(r"[^,.;:()]*?(?:" + DROP.pattern + r")[^,.;:()]*[,;:]?\s*", re.I)

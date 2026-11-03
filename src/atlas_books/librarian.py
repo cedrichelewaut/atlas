@@ -25,7 +25,7 @@ def _y(s):
 class P:
     def __init__(s, text):
         s.raw = text.strip()
-        s.t = " " + re.sub(r"\s+", " ", s.raw.lower().replace("’", "'").replace("–", "-")) + " "
+        s.t = " " + re.sub(r"\s+", " ", s.raw.lower().replace("’", "'").replace("–", "-").replace("★", " stars")) + " "
         s.f = {}
         s.remove = set()
         s.clear = False

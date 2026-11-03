@@ -5,11 +5,18 @@ import os
 import socket
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.error
 import urllib.request
 
 import pytest
+
+# In-process tests (units) use an isolated home and the bundled sample, never ~/.atlas or a dataset you imported.
+os.environ["ATLAS_HOME"] = tempfile.mkdtemp(prefix="atlas-test-home-")
+os.environ["AGENT_PROVIDER"] = "none"
+os.environ["OLLAMA_HOST"] = "http://127.0.0.1:9"
+os.environ.pop("ATLAS_DATA", None)
 
 TOKEN = "test-token-0123456789abcdef"
 

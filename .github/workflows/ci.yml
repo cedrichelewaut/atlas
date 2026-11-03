@@ -2,28 +2,48 @@ name: ci
 on:
   push:
   pull_request:
+permissions:
+  contents: read
 jobs:
-  smoke:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/ruff-action@v3
+        with:
+          version: "0.17.3"
+          args: "check"
+      - uses: astral-sh/ruff-action@v3
+        with:
+          version: "0.17.3"
+          args: "format --check"
+  test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        python: ["3.11", "3.13"]
+        python: ["3.10", "3.11", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
+          cache: pip
       - name: Install
         run: |
           python -m pip install --upgrade pip
           pip install --pre ".[dev]"
       - name: CLI
         run: atlas --version && atlas --help
-      - name: Smoke test (import fixtures + serve the sample + /api/config + rules-mode Atlas AI)
-        run: pytest -q tests
+      - name: Tests (imports, every GET route, security, rules parser, textprep, normalise, recommendation wizard)
+        run: pytest -q
       - name: End to end via the CLI
         run: |
           export ATLAS_HOME=$RUNNER_TEMP/atlas
           atlas import tests/fixtures/books.json --name ci
           (atlas serve --port 8099 --no-browser &) ; for i in $(seq 1 60); do curl -sf localhost:8099/api/config && break; sleep 2; done
           curl -sf localhost:8099/api/config | python -c "import json,sys; d=json.load(sys.stdin); assert d['total']==199, d; print('ok', d['subtitle'])"
+          TOKEN=$(cat $ATLAS_HOME/api_token)
+          curl -sf -X POST localhost:8099/api/chat -H 'Content-Type: application/json' -H "X-Atlas-Token: $TOKEN" \
+            -d '{"messages":[{"role":"user","content":"zoom out"}]}' | python -c "import json,sys; r=json.load(sys.stdin)['reply']; assert 'Map updated' in r, r; print('ok chat')"
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST localhost:8099/api/profile -H 'Content-Type: text/plain' -d '{}')" = 415
