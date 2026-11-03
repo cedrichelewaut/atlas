@@ -4,7 +4,7 @@ Input  : Goodreads library export CSV, any CSV/TSV (flexible column names), JSON
 Output : <dataset dir>/
            books.parquet   i, title, author, year, x, y, rating, ratings_count, pages, genre, cluster, cluster_label, url
            extra.parquet   i, tags (", "-joined slugs), pages, desc (first 360 chars)
-           vecs_i8.npy     all-MiniLM-L6-v2 description embeddings, int8 ...
+           vecs_i8.npy     bge-small-en-v1.5 embeddings of title + tags + cleaned description (textprep.py), int8 ...
            vecs_scale.npy  ... with a per-dimension float scale (vec = i8 * scale)
            meta.json       name, description, counts, source, attribution
 Works from ~50 to ~500k books (UMAP is fitted on a 150k sample above that size and the rest is projected).
@@ -13,6 +13,10 @@ from __future__ import annotations
 import csv, io, json, math, os, re, sys, time, urllib.parse
 from pathlib import Path
 import numpy as np, polars as pl
+
+from .textprep import book_text
+
+TEXT_RECIPE = "title + tags + description without marketing fluff (textprep v1)"
 
 FIELDS = {
     "title": ["title", "name", "book", "book_title", "booktitle"],
@@ -197,25 +201,39 @@ def normalise(rows: list[dict], mapping: dict[str, str] | None = None) -> pl.Dat
 
 
 # ---------------------------------------------------------------- embedding
-MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+MODEL = os.environ.get("ATLAS_EMBED_MODEL", "BAAI/bge-small-en-v1.5")   # 384-d, 512-token context, ONNX via fastembed
+MAX_TOKENS = 512
 
 
-def embed(texts: list[str], batch: int = 256) -> np.ndarray:
+def embed(texts: list[str], batch: int = 32) -> np.ndarray:
+    """Normalised embeddings. Texts are processed in length order (pad to the longest in the batch, not to 512 tokens),
+    which is ~2.5x faster on CPU than fixed-length padding; the result is returned in the input order."""
     t0 = time.time()
+    order = np.argsort([len(t) for t in texts], kind="stable")
+    st = [texts[k] for k in order]
     try:
         from fastembed import TextEmbedding
         m = TextEmbedding(MODEL)
+        tok = getattr(getattr(m, "model", None), "tokenizer", None)
+        if tok is not None:
+            tok.enable_truncation(max_length=MAX_TOKENS)
+            pad = tok.padding or {}
+            tok.enable_padding(pad_id=pad.get("pad_id", 0), pad_token=pad.get("pad_token", "[PAD]"))
         out = []
-        for a in range(0, len(texts), 4096):
-            out.append(np.asarray(list(m.embed(texts[a:a + 4096], batch_size=batch)), np.float32))
-            log(f"  embedded {min(a + 4096, len(texts)):,}/{len(texts):,} ({time.time() - t0:.0f}s)")
-        V = np.vstack(out)
+        for a in range(0, len(st), 4096):
+            out.append(np.asarray(list(m.embed(st[a:a + 4096], batch_size=batch)), np.float32))
+            log(f"  embedded {min(a + 4096, len(st)):,}/{len(st):,} ({time.time() - t0:.0f}s)")
+        S = np.vstack(out)
     except ImportError:
         try:
             from sentence_transformers import SentenceTransformer
         except ImportError:
             raise SystemExit("no embedding backend: pip install fastembed (default) or sentence-transformers")
-        V = SentenceTransformer(MODEL).encode(texts, batch_size=batch, show_progress_bar=True, convert_to_numpy=True).astype(np.float32)
+        sm = SentenceTransformer(MODEL)
+        sm.max_seq_length = MAX_TOKENS
+        S = sm.encode(st, batch_size=batch, show_progress_bar=True, convert_to_numpy=True).astype(np.float32)
+    V = np.empty_like(S)
+    V[order] = S
     V /= np.linalg.norm(V, axis=1, keepdims=True) + 1e-9
     return V
 
@@ -300,9 +318,10 @@ def build(df: pl.DataFrame, out: Path, name: str, source: str, attribution: str 
     has = sum(1 for d in desc if len(d) > 40)
     if has < n:
         log(f"{n - has:,} books have no (or a very short) description: embedding title + author + tags for those")
-    texts = [d if len(d) > 40 else f"{t}. {a or ''}. {tg}".strip() for d, t, a, tg in
+    # title + tags + description with marketing fluff stripped (textprep.py); books without a blurb still get title + tags
+    texts = [book_text(t, d, tg, author=a) for d, t, a, tg in
              zip(desc, df["title"].to_list(), df["author"].to_list(), df["tags"].fill_null("").to_list())]
-    log(f"embedding {n:,} descriptions with {MODEL} (local)...")
+    log(f"embedding {n:,} books (title + tags + cleaned description) with {MODEL} (local, max {MAX_TOKENS} tokens)...")
     V = embed(texts)
     Y = layout(V)
     labels, cl = clusters(Y, df["tags"].fill_null("").to_list())
@@ -319,7 +338,7 @@ def build(df: pl.DataFrame, out: Path, name: str, source: str, attribution: str 
     np.save(out / "vecs_i8.npy", Q)
     np.save(out / "vecs_scale.npy", sc)
     meta = {"name": name, "n": n, "source": source, "attribution": attribution, "built": time.strftime("%Y-%m-%d %H:%M"),
-            "embedding_model": MODEL, "with_description": has, "with_rating": int(df["rating"].is_not_null().sum()),
+            "embedding_model": MODEL, "embedding_text": TEXT_RECIPE, "with_description": has, "with_rating": int(df["rating"].is_not_null().sum()),
             "description": description or f"{n:,} books"}
     json.dump(meta, open(out / "meta.json", "w"), indent=1)
     log(f"done: {n:,} books, {has:,} with descriptions, {meta['with_rating']:,} with ratings")

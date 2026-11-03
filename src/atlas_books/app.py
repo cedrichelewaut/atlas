@@ -245,7 +245,7 @@ async def t_focus_book(title=None,i=None,radius=None,keep_selections=True):
 async def t_similar_books(title=None,i=None,k=10):
     j=find(title,i); res=similar(j,min(int(k),50)); st=M['state']; inview=set(B.filter(filt(st))['i'].to_list())
     return {'book':bookrow(B.row(j,named=True)),'similar':[r|{'in_current_view':r['i'] in inview} for r in res],
-            'note':'similarity is cosine over all-MiniLM-L6-v2 description embeddings; map position is a 2D UMAP and does not always keep neighbours together'}
+            'note':f"similarity is cosine over {store.META.get('embedding_model','all-MiniLM-L6-v2')} embeddings of {store.META.get('embedding_text','the description')}"+'; map position is a 2D UMAP and does not always keep neighbours together'}
 async def t_get_user_profile(): return agent.load_profile(B)
 async def t_recommend_start(query=''): r=await rec.start(B,filt(M['state']),describe(M['state']),query=query or ''); await _wizard_recs(r); return r
 async def t_recommend_answer(session,option): r=await rec.answer(session,option); await _wizard_recs(r); return r

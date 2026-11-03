@@ -40,8 +40,11 @@ Docker: `docker build -t atlas . && docker run -p 8010:8010 atlas`
 | **JSON / JSON Lines / Parquet** | A list of objects (or `{"books": [...]}`) with the same field names. |
 | **Hugging Face dataset** | `atlas import --hf user/dataset [--hf-file data.parquet]` (`pipx inject atlas-books huggingface_hub`; uses `HF_TOKEN` for private datasets you own). |
 
-What happens: descriptions are embedded **locally** with `all-MiniLM-L6-v2` (fastembed/ONNX, no GPU, nothing leaves your
-machine), UMAP lays them out in 2D, and the result is written
+What happens: each book becomes one text (title + tags/shelves + the description with marketing fluff stripped: praise
+quotes, "New York Times bestselling", "from the author of", award and edition notes, "gripping"/"unforgettable"; library
+shelves such as to-read or owned are dropped), which is embedded **locally** with `BAAI/bge-small-en-v1.5` (fastembed/ONNX,
+up to 512 tokens, no GPU, nothing leaves your machine; `ATLAS_EMBED_MODEL` picks another fastembed model), UMAP lays the
+vectors out in 2D, and the result is written
 to `~/.atlas/datasets/<name>/`. It scales from ~50 to ~500k books: 3k books take about a minute on a laptop CPU; above
 150k books UMAP is fitted on a sample and the rest is projected. `atlas list` / `atlas use <name>` switch datasets;
 `ATLAS_HOME` moves everything.
@@ -64,7 +67,7 @@ browser ── FlexViz dashboard (iframe) ──┐      one shared FlexViz stat
 FastAPI (atlas_books.app) ── state mirror M ── tools: set_view, set_filters, focus_book, zoom_to_topic,
    │                                          zoom_to_author, top_rated_in_view, similar_books, recommend_* ...
    ├── Atlas AI: rules parser (librarian.py) → optional LLM (Ollama / OpenAI-compatible) calling the same tools
-   ├── embeddings index (int8 MiniLM vectors, numpy or faiss) for "similar books"
+   ├── embeddings index (int8 bge-small vectors, numpy or faiss) for "similar books"
    └── data: ~/.atlas/datasets/<name>/{books,extra}.parquet, vecs_i8.npy, meta.json   ← atlas import
 ```
 
