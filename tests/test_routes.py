@@ -67,3 +67,19 @@ def test_events_stream_says_hello(server):
     s.close()
     assert b"200" in buf.split(b"\r\n", 1)[0]
     assert b'"type": "hello"' in buf
+
+
+def test_page_examples_come_from_the_dataset(server):
+    body = request(server, "/")[2].decode()
+    assert "{{" not in body and "Martian" not in body and "Connect Goodreads" not in body
+    assert "zoom to science fiction" in body.lower()  # the Gutenberg sample has no ratings: no "4★+" example
+    cfg = json.loads(request(server, "/api/config")[2])
+    assert cfg["has_rating"] is False
+
+
+def test_system_prompt_names_the_dataset():
+    from atlas_books import agent
+
+    p = agent.system_prompt("2,920 public-domain novels from Project Gutenberg", has_rating=False)
+    assert "Project Gutenberg" in p and "Goodreads" not in p and "has no ratings" in p
+    assert "482k" not in agent.SYSTEM_TEMPLATE

@@ -260,22 +260,21 @@ async def _openai(p, messages, tools, call_tool, trace):
         for t in tools
     ]
     msgs = [{"role": "system", "content": SYSTEM}] + messages
-    if True:
-        for _ in range(8):
-            r = await post(
-                f"{base}/chat/completions",
-                {"Authorization": f"Bearer {os.environ[env]}"},
-                {"model": model, "messages": msgs, "tools": T},
-            )
-            m = r["choices"][0]["message"]
-            msgs.append(m)
-            if not m.get("tool_calls"):
-                return m.get("content") or ""
-            for tc in m["tool_calls"]:
-                args = json.loads(tc["function"]["arguments"] or "{}")
-                res = await call_tool(tc["function"]["name"], args)
-                trace.append({"tool": tc["function"]["name"], "args": args})
-                msgs.append({"role": "tool", "tool_call_id": tc["id"], "content": json.dumps(res, default=str)[:12000]})
+    for _ in range(8):
+        r = await post(
+            f"{base}/chat/completions",
+            {"Authorization": f"Bearer {os.environ[env]}"},
+            {"model": model, "messages": msgs, "tools": T},
+        )
+        m = r["choices"][0]["message"]
+        msgs.append(m)
+        if not m.get("tool_calls"):
+            return m.get("content") or ""
+        for tc in m["tool_calls"]:
+            args = json.loads(tc["function"]["arguments"] or "{}")
+            res = await call_tool(tc["function"]["name"], args)
+            trace.append({"tool": tc["function"]["name"], "args": args})
+            msgs.append({"role": "tool", "tool_call_id": tc["id"], "content": json.dumps(res, default=str)[:12000]})
     return "(stopped after 8 tool rounds)"
 
 
@@ -284,27 +283,26 @@ async def _anthropic(messages, tools, call_tool, trace):
     model = os.environ.get("AGENT_MODEL", model)
     T = [{"name": t["name"], "description": t["description"], "input_schema": t["inputSchema"]} for t in tools]
     msgs = list(messages)
-    if True:
-        for _ in range(8):
-            out = await post(
-                f"{base}/messages",
-                {"x-api-key": os.environ[env], "anthropic-version": "2023-06-01"},
-                {"model": model, "max_tokens": 1500, "system": SYSTEM, "messages": msgs, "tools": T},
-            )
-            msgs.append({"role": "assistant", "content": out["content"]})
-            uses = [b for b in out["content"] if b["type"] == "tool_use"]
-            if not uses:
-                return "".join(b.get("text", "") for b in out["content"] if b["type"] == "text")
-            res = []
-            for u in uses:
-                v = await call_tool(u["name"], u["input"])
-                trace.append({"tool": u["name"], "args": u["input"]})
-                res.append({"type": "tool_result", "tool_use_id": u["id"], "content": json.dumps(v, default=str)[:12000]})
-            msgs.append({"role": "user", "content": res})
+    for _ in range(8):
+        out = await post(
+            f"{base}/messages",
+            {"x-api-key": os.environ[env], "anthropic-version": "2023-06-01"},
+            {"model": model, "max_tokens": 1500, "system": SYSTEM, "messages": msgs, "tools": T},
+        )
+        msgs.append({"role": "assistant", "content": out["content"]})
+        uses = [b for b in out["content"] if b["type"] == "tool_use"]
+        if not uses:
+            return "".join(b.get("text", "") for b in out["content"] if b["type"] == "text")
+        res = []
+        for u in uses:
+            v = await call_tool(u["name"], u["input"])
+            trace.append({"tool": u["name"], "args": u["input"]})
+            res.append({"type": "tool_result", "tool_use_id": u["id"], "content": json.dumps(v, default=str)[:12000]})
+        msgs.append({"role": "user", "content": res})
     return "(stopped after 8 tool rounds)"
 
 
-SYSTEM = """You are Atlas AI, the concise book-discovery guide built into Atlas. If asked your name, you are Atlas AI. You and the user share ONE live map of ~482k English-language Goodreads fiction books (1980+): every book is a dot; books with similar blurbs sit close together (dot size = number of ratings, colour = average rating). Under the map are four range sliders: year, rating (1-5), ratings_count, pages. Genre is NOT a filter.
+SYSTEM_TEMPLATE = """You are Atlas AI, the concise book-discovery guide built into Atlas. If asked your name, you are Atlas AI. You and the user share ONE live map of {corpus}: every book is a dot; books with similar blurbs sit close together (dot size = number of ratings, colour = average rating). Under the map are four range sliders: year, rating (1-5), ratings_count, pages. Genre is NOT a filter.{rating_note}
 Each turn you get CURRENT VIEW (zoom, filters, books in view, top rated) and USER PROFILE.
 You control the map with tools; the user's screen updates immediately:
 - focus_book(title): zoom to one book and its neighbourhood (use for "show X", "where is X", "books like X").
@@ -313,6 +311,19 @@ You control the map with tools; the user's screen updates immediately:
 - set_filters(year=[a,b], rating=[a,b], ratings_count=[a,b], pages=[a,b]): other sliders are KEPT automatically. Never use clear=true unless the user explicitly asks to reset or clear all filters. Pass [] to remove one filter.
 - top_rated_in_view, list_books_in_view, similar_books, search_book, get_view_state for information.
 Rules: if the user asks to see, filter, narrow or move anything, CALL THE TOOL (do not just describe it). Then answer in at most 4 sentences or 5 bullets, recommending only books from tool results or CURRENT VIEW (title, author, year, rating). No preamble."""
+
+
+def system_prompt(corpus: str = "your books", has_rating: bool = True) -> str:
+    """The Atlas AI system prompt for one dataset (corpus = its description from meta.json)."""
+    note = (
+        ""
+        if has_rating
+        else " This dataset has no ratings: ratings_count is its popularity measure and the rating slider is unused."
+    )
+    return SYSTEM_TEMPLATE.format(corpus=corpus, rating_note=note)
+
+
+SYSTEM = system_prompt()
 
 
 def compact_view(v):
@@ -535,7 +546,7 @@ async def _ollama(messages, tools, call_tool, trace, view_state, model=None, bac
                 res = {"error": err + " Fix the arguments and call the tool again."}
                 errors += 1
                 if errors > 2:
-                    return '(I could not turn that into a valid map action; try rephrasing, e.g. "only books after 2010" or "show me The Martian".)'
+                    return '(I could not turn that into a valid map action; try rephrasing, e.g. "only books after 2010" or "show me <a title>".)'
             else:
                 try:
                     raw = await call_tool(name, args)

@@ -32,7 +32,7 @@ from .state import (
     describe,
     filt,
     filters_of,
-    gr_url,
+    book_url,
     set_state,
     view_state,
 )
@@ -265,7 +265,7 @@ def _rec_row(b, k):
         "author": r["author"],
         "x": round(float(r["x"]), 6),
         "y": round(float(r["y"]), 6),
-        "url": gr_url(i),
+        "url": book_url(i),
     }
 
 

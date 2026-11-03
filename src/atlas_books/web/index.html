@@ -89,8 +89,8 @@ aside{position:relative}
 .msg.sys .bub{background:#f8fafc;border-style:dashed;color:var(--text-2);font-size:12.5px}
 .model{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);margin-left:auto}
 
-a.gr{display:inline-flex;align-items:center;gap:2px;height:20px;padding:0 5px;border-radius:6px;border:1px solid #e3d6bf;background:#f8f3e8;color:#5b3f1f;text-decoration:none;font:600 11px/1 Georgia,serif;flex:none;transition:background .15s,border-color .15s,transform .15s}
-a.gr b{font-weight:700;font-size:12px;margin-top:-2px}a.gr svg{opacity:.75}a.gr:hover{background:#efe3c9;border-color:#d5bf96;transform:translateY(-1px)}a.gr.inl{height:17px;padding:0 4px;margin-left:4px;vertical-align:1px}
+a.bklink{display:inline-flex;align-items:center;gap:2px;height:20px;padding:0 5px;border-radius:6px;border:1px solid #e3d6bf;background:#f8f3e8;color:#5b3f1f;text-decoration:none;font:600 11px/1 Georgia,serif;flex:none;transition:background .15s,border-color .15s,transform .15s}
+a.bklink b{font-weight:700;font-size:12px;margin-top:-2px}a.bklink svg{opacity:.75}a.bklink:hover{background:#efe3c9;border-color:#d5bf96;transform:translateY(-1px)}a.bklink.inl{height:17px;padding:0 4px;margin-left:4px;vertical-align:1px}
 /* ---- right panel: tabs ---- */
 aside{display:flex!important;flex-direction:column}
 .tabs{display:flex;gap:2px;padding:6px 10px 0;border-bottom:1px solid var(--border);flex:none}
@@ -124,8 +124,8 @@ aside{display:flex!important;flex-direction:column}
 #ptext:focus{outline:none;border-color:var(--accent-border);box-shadow:0 0 0 3px var(--accent-bg);background:var(--surface)}
 .prow{display:flex;align-items:center;gap:10px;margin-top:10px}#pstat{font-size:12px;color:var(--muted)}#pstat.ok{color:#15803d}
 .btn.pri{white-space:nowrap;padding:0 14px;background:var(--accent);border-color:transparent;color:#fff;font-weight:600;height:32px}.btn.pri:hover{background:var(--accent-2)}
-.gr{display:flex;gap:12px;align-items:flex-start}.glogo{flex:none;width:40px;height:40px;border-radius:10px;background:#f4f1ea;display:grid;place-items:center;font-weight:700;color:#5a4634;font-family:Georgia,serif;font-size:22px;border:1px solid #e6dfcf}
-.soon{display:inline-block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#9a5b00;background:#fff7e6;border:1px solid #f6d28b;border-radius:999px;padding:1px 7px;margin-left:8px}
+.imp{display:flex;gap:12px;align-items:flex-start}.glogo{flex:none;width:40px;height:40px;border-radius:10px;background:#f4f1ea;display:grid;place-items:center;font-weight:700;color:#5a4634;font-family:Georgia,serif;font-size:22px;border:1px solid #e6dfcf}
+
 .btn-dis{opacity:.55;cursor:not-allowed}.btn-dis:hover{background:var(--surface)}
 #fab{display:none}aside.notlib #fab{display:grid}
 .msg.b .bub .mapchg{display:block;margin:-2px -4px 6px;padding:6px 8px;border-radius:8px;background:#ecfdf5;border:1px solid #bbf7d0;color:#14532d;font-size:12.5px}
@@ -157,9 +157,9 @@ aside{display:flex!important;flex-direction:column}
     <label><span>API key <i>optional</i></span><input id=ckey type=password placeholder="sk-…" autocomplete=new-password spellcheck=false></label>
     <div id=cmsg></div><div class=crow><button type=button class=btn id=ccancel>Cancel</button><button type=submit class="btn pri" id=cgo>Test &amp; connect</button></div>
     <div class=cnote>Saved on this computer only (librarian_model.json). The key is never sent back to the browser.</div></form>
-   <div id=log><div class=welcome id=welcome><b>Hi, I'm Atlas AI.</b> I can move the map for you. Try <i>books like The Martian</i>, <i>only 4★+ sci-fi after 2010</i>, <i>under 300 pages</i>, <i>zoom out</i> or <i>reset filters</i>. Or ask me to <i>recommend something from here</i> and I'll ask a couple of quick questions about the books in view.</div></div>
+   <div id=log><div class=welcome id=welcome><b>Hi, I'm Atlas AI.</b> I can move the map for you. Try <i>books like {{EX_TITLE}}</i>, <i>{{EX_FILTER}}</i>, <i>{{EX_PAGES}}</i>, <i>zoom out</i> or <i>reset filters</i>. Or ask me to <i>recommend something from here</i> and I'll ask a couple of quick questions about the books in view.</div></div>
    <div id=sugg></div>
-   <form id=f><input id=q autocomplete=off placeholder="Ask, filter or zoom: 'books like The Martian'"><button id=send title=Send><svg width=16 height=16 viewBox="0 0 24 24" fill=none stroke="#fff" stroke-width=2.4 stroke-linecap=round stroke-linejoin=round><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></form>
+   <form id=f><input id=q autocomplete=off placeholder="Ask, filter or zoom: 'books like {{EX_TITLE}}'"><button id=send title=Send><svg width=16 height=16 viewBox="0 0 24 24" fill=none stroke="#fff" stroke-width=2.4 stroke-linecap=round stroke-linejoin=round><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></form>
   </section>
   <section class=pane id=p-top>
    <div class=toph>Best books in the current zoom and filters, <span title="Bayesian average: (ratings × average + 1000 × mean of view) ÷ (ratings + 1000)">rating weighted by number of ratings</span>. Click one to fly to it.</div>
@@ -167,10 +167,9 @@ aside{display:flex!important;flex-direction:column}
   </section>
   <section class=pane id=p-prof>
    <div class=card><h3>What you like</h3><p>Favourite books and authors, genres and moods you love, things you avoid. Atlas AI reads this every time it answers or recommends.</p>
-    <textarea id=ptext spellcheck=true placeholder="Favourite books: The Martian, Project Hail Mary&#10;Authors I love: Andy Weir, Becky Chambers&#10;I like: clever sci-fi, found family, humour&#10;I avoid: graphic violence, love triangles"></textarea>
+    <textarea id=ptext spellcheck=true placeholder="Favourite books: {{EX_FAVS}}&#10;Authors I love: {{EX_AUTHORS}}&#10;I like: clever sci-fi, found family, humour&#10;I avoid: graphic violence, love triangles"></textarea>
     <div class=prow><button class="btn pri" id=psave>Save profile</button><span id=pstat></span></div></div>
-   <div class="card gr"><div class=glogo>g</div><div><h3>Goodreads <span class=soon>Import</span></h3><p>Export your library from Goodreads (My Books → Import and export) and run <code>atlas import goodreads_library_export.csv</code>; copy the file into <code>~/.atlas/</code> to use it in your profile. Connect your Goodreads account to fill in your profile automatically from your shelves and ratings.</p>
-    <button class="btn btn-dis" id=grbtn disabled title="Not available yet">Connect Goodreads</button></div></div>
+   <div class="card imp"><div class=glogo>g</div><div><h3>Your Goodreads library</h3><p>Export your library from Goodreads (My Books → Import and export) and run <code>atlas import goodreads_library_export.csv</code> to map it; copy the file into <code>~/.atlas/</code> (or <code>$ATLAS_HOME</code>) so Atlas AI can use your shelves and ratings as your profile.</p></div></div>
   </section>
   <button id=fab title="Ask Atlas AI"><svg class="amark" width=30 height=30 viewBox="0 0 32 32" aria-hidden=true><g shape-rendering="crispEdges"><rect width="32" height="32" fill="#FAFAF7"/><rect x="1" y="1" width="30" height="30" fill="none" stroke="#9A2400" stroke-width="2"/><rect x="1" y="1" width="7" height="30" fill="#9A2400"/></g><rect x="13" y="10" width="4" height="6" rx="2" fill="#9A2400"/><rect x="21" y="10" width="4" height="6" rx="2" fill="#9A2400"/></svg><span class=tip>Ask Atlas AI</span></button>
  </aside>
@@ -212,12 +211,12 @@ function chips(r){const c=[];const st=r.state||{};
 function render(r){$('#cnt').textContent=fmt(r.books_in_view);
  const w=$('#who');w.textContent=r.by==='human'?'Last change: you':r.by==='agent'?'Last change: assistant':r.by==='external'?'Last change: API':'Default view';
  if(r.focus)focus=r.focus;if(r.highlights)setRecs(r.highlights.recs);chips(r);renderTop(r.top_rated||[])}
-const GR_SVG='<svg width=11 height=11 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2.6 stroke-linecap=round stroke-linejoin=round aria-hidden=true><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
-function grUrl(b){return b&&(b.url||(b.i!=null?'/go/book/'+b.i:null))}
-function grLink(url,cls=''){return url?`<a class="gr ${cls}" href="${esc(url)}" target=_blank rel="noopener noreferrer" title="Open the book page" aria-label="Open the book page">${GR_SVG}</a>`:''}
+const LINK_SVG='<svg width=11 height=11 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2.6 stroke-linecap=round stroke-linejoin=round aria-hidden=true><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
+function bookUrl(b){return b&&(b.url||(b.i!=null?'/go/book/'+b.i:null))}
+function bookLink(url,cls=''){return url?`<a class="bklink ${cls}" href="${esc(url)}" target=_blank rel="noopener noreferrer" title="Open the book page" aria-label="Open the book page">${LINK_SVG}</a>`:''}
 let TOP=[];function renderTop(rows){TOP=rows;window.__top=rows;
  if(!rows.length){$('#toplist').innerHTML='<div class=tempty><b>No books here</b>Zoom out or clear a filter.</div>';return}
- $('#toplist').innerHTML=rows.map((b,k)=>`<div class="bk${focus&&b.i===focus.i?' sel':''}" data-i=${b.i} title="${esc(b.title)}"><div class=rk>${k+1}</div><div style="min-width:0"><div class=t>${esc(b.title)}</div><div class=a>${esc(b.author||'')}${b.year?' · '+b.year:''}</div></div><div class=m><div class=rt><i style="background:${rateColor(b.rating||0)}"></i>${b.rating?b.rating.toFixed(2):'–'}</div><div class=c>${kfmt(b.ratings_count)} ratings</div></div>${grLink(grUrl(b))}</div>`).join('')}
+ $('#toplist').innerHTML=rows.map((b,k)=>`<div class="bk${focus&&b.i===focus.i?' sel':''}" data-i=${b.i} title="${esc(b.title)}"><div class=rk>${k+1}</div><div style="min-width:0"><div class=t>${esc(b.title)}</div><div class=a>${esc(b.author||'')}${b.year?' · '+b.year:''}</div></div><div class=m><div class=rt><i style="background:${rateColor(b.rating||0)}"></i>${b.rating?b.rating.toFixed(2):'–'}</div><div class=c>${kfmt(b.ratings_count)} ratings</div></div>${bookLink(bookUrl(b))}</div>`).join('')}
 // ---------- FlexViz bridge ----------
 async function push(ack){const s=W.flexvizState({compact:true});lastKey=JSON.stringify(s.state);
  const r=await fetch('/api/browser_state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:s.state,client_state:s.client_state,revision:s.revision,ack})}).then(r=>r.json());if(r.stale){location.reload();return}render(r);marker()}
@@ -410,10 +409,10 @@ function bindMap(gd){if(gd.__fvxBound)return;gd.__fvxBound=true;let raf=0;
  gd.addEventListener('mousedown',ev=>{const hj=ML.hj;ML.down=true;hideTip();clearTimeout(ML.clk);ML.press=(ev.button===0&&!ev.shiftKey&&!ev.ctrlKey&&!ev.metaKey&&!ev.altKey&&hj>=0)?{x:ev.clientX,y:ev.clientY,t:performance.now(),j:hj,n:(ML.press&&performance.now()-ML.press.t<400)?2:1}:null});
  W.addEventListener('mouseup',ev=>{const p=ML.press;ML.press=null;if(p&&p.done)return;if(!p||p.n>1)return;const moved=Math.hypot(ev.clientX-p.x,ev.clientY-p.y);if(moved>4||performance.now()-p.t>600)return;
   const dr=gd.querySelector('.nsewdrag');if(!dr)return;const R=dr.getBoundingClientRect();if(pickDot(gd,ev.clientX-R.left,ev.clientY-R.top)!==p.j)return;
-  const i=PT.i[p.j];ML.clk=setTimeout(()=>openGoodreads(i),260)},true);
+  const i=PT.i[p.j];ML.clk=setTimeout(()=>openBook(i),260)},true);
  gd.addEventListener('dblclick',()=>clearTimeout(ML.clk),true);W.addEventListener('mouseup',()=>{ML.down=false});gd.addEventListener('wheel',hideTip,{passive:true});
  gd.on&&gd.on('plotly_afterplot',()=>setTimeout(marker,0));gd.on&&gd.on('plotly_relayouting',()=>{if(PT.ready&&glEnsure(gd))draw(gd)})}
-function openGoodreads(i){const b=BK[i];const u=(b&&b.url)||('/go/book/'+i);window.__grOpened=(window.__grOpened||[]).concat([{i,url:u,title:b&&b.title}]);window.open(u,'_blank','noopener,noreferrer')}
+function openBook(i){const b=BK[i];const u=(b&&b.url)||('/go/book/'+i);window.__bookOpened=(window.__bookOpened||[]).concat([{i,url:u,title:b&&b.title}]);window.open(u,'_blank','noopener,noreferrer')}
 function setSync(ok,txt){const s=$('#sync');s.querySelector('.dot').className='dot'+(ok?' live':'');s.lastChild.textContent=txt}
 function sse(){const es=new EventSource('/api/events');es.onopen=()=>setSync(true,'Live · synced');es.onerror=()=>setSync(false,'Reconnecting…');
  es.onmessage=async e=>{const m=JSON.parse(e.data);if(m.type==='hello'&&m.boot){if(window.__boot&&window.__boot!==m.boot){location.reload();return}window.__boot=m.boot}if(m.type==='apply'&&W)await applyPatch(m.patch,m.id);
@@ -437,10 +436,10 @@ function hl(){document.querySelectorAll('#ac div').forEach((d,k)=>d.classList.to
 $('#ac').onmousedown=e=>{const d=e.target.closest('[data-k]');if(d)pick(acR[+d.dataset.k])};
 function pick(b){$('#ac').style.display='none';$('#sq').value=b.title;tool('focus_book',{i:b.i})}
 function tool(n,a){return fetch('/api/tools/'+n,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(a)}).then(r=>r.json())}
-$('#toplist').onclick=e=>{if(e.target.closest('a.gr'))return;const c=e.target.closest('.bk');if(c){document.querySelectorAll('#toplist .bk').forEach(t=>t.classList.toggle('sel',t===c));tool('focus_book',{i:+c.dataset.i})}};
+$('#toplist').onclick=e=>{if(e.target.closest('a.bklink'))return;const c=e.target.closest('.bk');if(c){document.querySelectorAll('#toplist .bk').forEach(t=>t.classList.toggle('sel',t===c));tool('focus_book',{i:+c.dataset.i})}};
 $('#bReset').onclick=async()=>{focus=null;await tool('set_filters',{clear:true});await tool('set_view',{reset:true})};
 // ---------- chat ----------
-const SUG=["Books like The Martian","Recommend me something from here","Only highly rated sci-fi after 2010","What's in view?","Under 300 pages","Zoom out"];
+const SUG=["Books like {{EX_TITLE}}","Recommend me something from here","{{EX_FILTER_CAP}}","What's in view?","{{EX_PAGES_CAP}}","Zoom out"];
 $('#sugg').innerHTML=SUG.map(s=>`<button>${esc(s)}</button>`).join('');$('#sugg').onclick=e=>{if(e.target.tagName==='BUTTON'){$('#q').value=e.target.textContent;$('#f').requestSubmit()}};
 function md(t){const L=esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/(^|\W)\*(\S[^*]*?)\*(?=\W|$)/g,'$1<i>$2</i>').split(/\n/);let h='',ul=false;
  for(const l of L){const m=l.match(/^\s*(?:[-•*]|\d+[.)])\s+(.*)/);if(m){if(!ul){h+='<ul>';ul=true}h+=`<li>${m[1]}</li>`}else{if(ul){h+='</ul>';ul=false}if(l.trim())h+=`<p>${l}</p>`}}return h+(ul?'</ul>':'')}
@@ -486,7 +485,7 @@ $('#cform').onsubmit=async e=>{e.preventDefault();const m=$('#cmsg');m.className
  const st=await setModel({kind:'openai',base_url:$('#cbase').value.trim(),model:$('#cmodel').value.trim(),api_key:$('#ckey').value.trim()||undefined});$('#cgo').disabled=false;
  if(st.saved){$('#ckey').value='';$('#cform').hidden=true}else{m.className='err';m.textContent=(st.test&&st.test.error)||'Could not connect';if(MS.st)fillModels(MS.st);$('#msel').value='__connect';mstat('err','Error',m.textContent)}};
 $('#mstat').onclick=async()=>{mstat('busy','Testing…');try{const st=await fetch('/api/librarian/model/test',{method:'POST'}).then(r=>r.json());showTest(st.test,st.current)}catch(e){mstat('err','Error','network error')}};
-function linkMentions(el,links){if(!links||!Object.keys(links).length)return;el.querySelectorAll('.bub i, .bub b').forEach(n=>{if(n.closest('.mapchg')&&n.textContent.startsWith('Map updated'))return;const u=links[n.textContent.trim()];if(u&&!(n.nextElementSibling&&n.nextElementSibling.matches('a.gr')))n.insertAdjacentHTML('afterend',grLink(u,'inl'))})}
+function linkMentions(el,links){if(!links||!Object.keys(links).length)return;el.querySelectorAll('.bub i, .bub b').forEach(n=>{if(n.closest('.mapchg')&&n.textContent.startsWith('Map updated'))return;const u=links[n.textContent.trim()];if(u&&!(n.nextElementSibling&&n.nextElementSibling.matches('a.bklink')))n.insertAdjacentHTML('afterend',bookLink(u,'inl'))})}
 // ---------- recommendation wizard ----------
 let wiz=null;const fmtN=n=>n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(n>=1e4?0:1)+'k':''+n;
 function wbusy(on){thinking=on;$('#send').disabled=on;$('#sugg').style.display=on?'none':'flex'}
@@ -504,7 +503,7 @@ function renderRec(r){window.__rec=r;
   d.querySelector('.stop').onclick=()=>{d.querySelectorAll('.opt').forEach(x=>x.disabled=true);d.querySelector('.stop').remove();wiz=null;add('b',`<div class=bub>Okay, stopped. Ask me again any time, or switch to <b>Find me a book</b>.</div>`)};return}
  if(r.final){const f=r.final;const tot=(r.timings||[]).reduce((a,t)=>a+t.secs,0);
   const fd=add('b wiz',`<div class=bub><div class=wstep>Your top 3</div><div class=wq>${f.query?'For “'+esc(f.query)+'” · ':''}From ${r.in_view.toLocaleString()} books in view → ${r.candidates} candidates → ${f.finalists.length} finalists</div>
-  <div class=top3>${f.top3.map(b=>`<div class=pick><div class=n>${b.rank}</div><div><div class=tt data-t="${esc(b.title)}" data-i=${b.i}>${esc(b.title)}</div>${grLink(grUrl(b),'inl')}
+  <div class=top3>${f.top3.map(b=>`<div class=pick><div class=n>${b.rank}</div><div><div class=tt data-t="${esc(b.title)}" data-i=${b.i}>${esc(b.title)}</div>${bookLink(bookUrl(b),'inl')}
    <div class=mt>${esc(b.author||'')} · ${b.year||'?'} · <span class=star>★</span> ${b.rating??'–'} (${fmtN(b.ratings_count)} ratings)${b.pages?' · '+b.pages+' pages':''}</div>
    <p>${esc(b.summary)}</p><div class=why><b>Why:</b> ${esc(b.reason)}</div></div></div>`).join('')}</div>
   <div class=wfoot><span>${f.answers.length} question${f.answers.length==1?'':'s'} · ${tot.toFixed(0)}s · ${esc(f.source=='llm'?r.model:f.source=='fallback'?'rule-based':r.model+' + rules')}</span><span>Click a title to show it on the map</span></div></div>`);fd.querySelectorAll('.tt').forEach(t=>t.onclick=()=>fetch('/api/tools/focus_book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({i:+t.dataset.i})}));

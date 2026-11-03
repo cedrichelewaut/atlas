@@ -33,10 +33,10 @@ CORPUS = store.describe(B.height)
 _yr = B["year"].drop_nulls()
 if _yr.len():
     librarian.YMIN, librarian.YMAX = int(_yr.quantile(0.01)), int(_yr.max())
-agent.SYSTEM = agent.SYSTEM.replace("~482k English-language Goodreads fiction books (1980+)", CORPUS)
+agent.SYSTEM = agent.system_prompt(CORPUS, bool(HAS_RATING))
 
 
-def gr_url(i):
+def book_url(i):
     if not 0 <= int(i) < len(URLS):
         return None
     return URLS[int(i)]
@@ -58,7 +58,7 @@ def mention_links(text, limit=20):
                 _GL["ns"] = LOWER.str.replace(r"\s*\([^)]*#[^)]*\)$", "")  # title without '(Series, #n)'
             hit = B.filter(_GL["ns"] == t.lower())
         if hit.height:
-            out[t] = gr_url(hit.sort("ratings_count", descending=True)["i"][0])
+            out[t] = book_url(hit.sort("ratings_count", descending=True)["i"][0])
     return {k: v for k, v in out.items() if v}
 
 
@@ -255,7 +255,7 @@ def bookrow(r):
         "pages": r.get("pages"),
         "x": round(r["x"], 6),
         "y": round(r["y"], 6),
-        "url": gr_url(r["i"]),
+        "url": book_url(r["i"]),
     }  # full precision: the focus ring must sit exactly on the dot at any zoom
 
 

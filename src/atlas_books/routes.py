@@ -37,12 +37,13 @@ from .state import (
     describe,
     filt,
     filters_of,
-    gr_url,
+    book_url,
     mention_links,
     set_state,
     view_state,
 )
 from .tools import (
+    topic_mask,
     _cur_vp,
     author_lookup,
     call_tool,
@@ -62,20 +63,56 @@ mount_into(app, "/flexviz")
 app.add_middleware(security.Guard)  # same-origin + JSON + per-launch token on POSTs, Host check (see security.py)
 
 
+_EX = {}
+
+
+def _safe(t: str, n: int = 40) -> str:
+    """A title/author safe to drop into HTML text, an attribute and a JS string (letters, digits, simple punctuation)."""
+    t = re.sub(r"\s*[(:;].*$", "", t or "").strip() or (t or "")
+    return re.sub(r"[^\w .,!?'-]", "", t)[:n].replace("'", "").strip()
+
+
+def examples() -> dict:
+    """Example prompts for the page, chosen from the loaded dataset (most-rated titles/authors, a topic it has, its years)."""
+    if _EX:
+        return _EX
+    top = B.sort("ratings_count", descending=True, nulls_last=True).head(50)
+    titles = [x for x in (_safe(t) for t in top["title"].to_list()) if len(x) >= 3] or ["Dracula"]
+    authors = list(dict.fromkeys(_safe(a, 30) for a in top["author"].drop_nulls().to_list() if a))[:2] or [
+        "your favourite author"
+    ]
+    topic = None
+    for k in ("science fiction", "fantasy", "mystery", "romance", "horror", "adventure", "historical fiction"):
+        try:
+            if topic_mask(k).sum() >= 25:
+                topic = k
+                break
+        except Exception:
+            pass
+    topic = topic or "adventure"
+    years = B["year"].drop_nulls()
+    recent = int(years.quantile(0.75) // 10 * 10) if years.len() else 2010
+    old = int(years.median() // 10 * 10) if years.len() else 1900
+    ex_filter = f"only 4★+ {topic} after {recent}" if HAS_RATING else f"zoom to {topic}"
+    ex_pages = "under 300 pages" if B["pages"].is_not_null().any() else f"before {old}"
+    _EX.update(
+        EX_TITLE=titles[0],
+        EX_FAVS=", ".join(titles[1:3] or titles[:1]),
+        EX_AUTHORS=", ".join(authors),
+        EX_FILTER=ex_filter,
+        EX_FILTER_CAP=ex_filter[0].upper() + ex_filter[1:],
+        EX_PAGES=ex_pages,
+        EX_PAGES_CAP=ex_pages[0].upper() + ex_pages[1:],
+    )
+    return _EX
+
+
 @app.get("/", response_class=HTMLResponse)
 def index():
-    """index.html with dataset-aware example prompts (the originals assume a large modern fiction catalogue)."""
+    """index.html with example prompts that fit the loaded dataset and the per-launch API token."""
     h = open(f"{HERE}/index.html").read()
-    top = B.sort("ratings_count", descending=True, nulls_last=True).head(1)
-    if top.height:
-        ex = re.sub(r"\s*[(:;].*$", "", top["title"][0]).strip()[:40] or top["title"][0][:40]
-        h = h.replace("The Martian", ex.replace('"', "").replace("'", ""))
-    if not HAS_RATING:
-        h = h.replace("only 4★+ sci-fi after 2010", "zoom to science fiction").replace(
-            "Only highly rated sci-fi after 2010", "Zoom to science fiction"
-        )
-    if not B["pages"].is_not_null().any():
-        h = h.replace("under 300 pages", "before 1900").replace("Under 300 pages", "Before 1900")
+    for k, v in examples().items():
+        h = h.replace("{{" + k + "}}", v)
     h = h.replace("<head>", f'<head><meta name="atlas-token" content="{security.TOKEN}">', 1)
     return HTMLResponse(h, headers={"Cache-Control": "no-store"})
 
@@ -238,10 +275,7 @@ async def lib_model_test():
 
 @app.get("/api/profile")
 def get_profile():
-    return {
-        "text": open(PROFILE).read() if os.path.exists(PROFILE) else "",
-        "goodreads": {"connected": False, "status": "coming soon"},
-    }
+    return {"text": open(PROFILE).read() if os.path.exists(PROFILE) else ""}
 
 
 @app.post("/api/profile")
@@ -459,7 +493,7 @@ def map_bin(x0: float, x1: float, y0: float, y1: float):
 
 @app.get("/go/book/{i}")
 def go_book(i: int):
-    u = gr_url(i)
+    u = book_url(i)
     if not u:
         raise HTTPException(404, "no link for this book")
     return RedirectResponse(u, status_code=302)
