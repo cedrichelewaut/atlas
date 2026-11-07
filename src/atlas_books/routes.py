@@ -576,6 +576,8 @@ async def chat(req: Request):
             log[name] = res
         if name.startswith("recommend_"):
             log["wizard"] = True
+        if name == "highlight_books":
+            log["highlighted"] = True
         return res
 
     r = await agent.chat(

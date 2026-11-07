@@ -3,11 +3,12 @@ topics, authors, top rated, the recommendation wizard and recommendation highlig
 
 import re
 import time
+import asyncio
 import threading
 import numpy as np
 import polars as pl
 from fastapi import HTTPException
-from . import store
+from . import store, paths
 from . import agent, rec
 from .state import (
     B,
@@ -220,14 +221,19 @@ async def t_focus_book(title=None, i=None, radius=None, keep_selections=True):
     return {"focus": FOCUS["book"], "cleared_filters": cleared} | out
 
 
-async def t_similar_books(title=None, i=None, k=10):
+async def t_similar_books(title=None, i=None, k=10, only_in_view=False):
     j = find(title, i)
-    res = similar(j, min(int(k), 50))
+    k = min(int(k), 50)
     st = M["state"]
     inview = set(B.filter(filt(st))["i"].to_list())
+    if only_in_view:  # nearest neighbours that pass the current zoom + filters: search wider, then keep the visible ones
+        res = [r for r in similar(j, 2000) if r["i"] in inview][:k]
+    else:
+        res = similar(j, k)
     return {
         "book": bookrow(B.row(j, named=True)),
         "similar": [r | {"in_current_view": r["i"] in inview} for r in res],
+        "only_in_view": bool(only_in_view),
         "note": f"similarity is cosine over {store.META.get('embedding_model', 'all-MiniLM-L6-v2')} embeddings of {store.META.get('embedding_text', 'the description')}"
         + "; map position is a 2D UMAP and does not always keep neighbours together",
     }
@@ -317,7 +323,7 @@ def mention_rows(text, limit=8):
 
 async def recs_from_chat(user_text, reply, via, log):
     """Which books did this chat turn recommend? similar_books results, or top rated / named books when the user asked for recommendations."""
-    if "wizard" in log:
+    if "wizard" in log or "highlighted" in log:  # the wizard or an explicit highlight_books call already set them
         return
     picks = None
     if "similar_books" in log:
@@ -691,6 +697,214 @@ def _neigh_r(x, y):
     return 1.5
 
 
+def _resolve(title=None, i=None):
+    """Book index from i, or from a title: exact (series-insensitive) match first, then the most-rated substring match."""
+    if i is not None:
+        j = int(i)
+        if not 0 <= j < B.height:
+            raise HTTPException(404, f"no book with i={j}")
+        return j
+    h = title_lookup(title, strict=True) or title_lookup(title, strict=False)
+    if not h:
+        raise HTTPException(404, f"no book matching {title!r}")
+    return int(h["i"])
+
+
+async def t_highlight_books(titles=None, ids=None, label=None):
+    """Ring up to 10 books (yellow ring + ranked tag), in the given order, and frame the view on them. Replaces earlier highlights."""
+    want = [("i", x) for x in (ids or [])] + [("title", t) for t in (titles or [])]
+    if not want:
+        raise HTTPException(400, "highlight_books needs titles or ids")
+    if len(want) > 10:
+        raise HTTPException(400, "highlight_books takes at most 10 books")
+    rows, missing = [], []
+    for kind, v in want:
+        try:
+            j = _resolve(i=v) if kind == "i" else _resolve(title=v)
+        except HTTPException:
+            missing.append(v)
+            continue
+        if j not in [r["i"] for r in rows]:
+            rows.append({"i": j})
+    if missing:
+        raise HTTPException(404, f"not in the catalogue: {missing}; use exact titles or ids from tool results")
+    await set_recs(rows, by="assistant")
+    HIGHLIGHT["label"] = label
+    inview = set(B.filter(filt(M["state"]))["i"].to_list())
+    return {
+        "highlighted": [
+            bookrow(B.row(r["i"], named=True)) | {"rank": r["rank"], "in_current_view": r["i"] in inview}
+            for r in HIGHLIGHT["recs"]
+        ],
+        "label": label,
+        "summary": view_state()["summary"],
+    }
+
+
+_EXTRA = {}
+
+
+def _extra_row(j):
+    if "lf" not in _EXTRA:
+        _EXTRA["lf"] = pl.scan_parquet(f"{DATA}/extra.parquet")
+    d = _EXTRA["lf"].filter(pl.col("i") == j).collect()
+    return d.row(0, named=True) if d.height else {}
+
+
+async def t_get_book_details(title=None, i=None):
+    """Description (first ~600 chars), tags, pages, series, year, rating and number of ratings of one book."""
+    j = _resolve(title, i)
+    r = B.row(j, named=True)
+    e = _extra_row(j)
+    desc = (e.get("desc") or "").strip()
+    m = re.search(r"\(([^()]*?),?\s*#\s*([\d.]+)[^()]*\)\s*$", r["title"] or "")
+    return {
+        **bookrow(r),
+        "series": {"name": m.group(1).strip(), "number": m.group(2)} if m else None,
+        "pages": e.get("pages") if e.get("pages") is not None else r.get("pages"),
+        "tags": [t for t in (e.get("tags") or "").split(", ") if t][:15],
+        "description": desc[:600] + ("..." if len(desc) > 600 else ""),
+    }
+
+
+# ---------- web_lookup: outside facts via a web search API (WEB_SEARCH_PROVIDER=tavily (default) | brave), cached on disk
+# and replayable offline. Keys come from TAVILY_API_KEY / BRAVE_API_KEY only. ----------
+def _norm_query(q):
+    return re.sub(r"\s+", " ", (q or "").lower()).strip(" .?!\"'")
+
+
+def web_cache_dir():
+    return paths.home() / "web_cache"
+
+
+def _web_cache_file(q):
+    import hashlib
+
+    return web_cache_dir() / (hashlib.sha256(_norm_query(q).encode()).hexdigest()[:32] + ".json")
+
+
+def _http_json(req):
+    import json as _json
+    import urllib.request
+
+    try:
+        with urllib.request.urlopen(req, timeout=15) as r:
+            return _json.loads(r.read())
+    except Exception as e:  # never echo the request (it carries the key)
+        raise HTTPException(502, f"web_lookup failed: {type(e).__name__} {getattr(e, 'code', '')}".strip())
+
+
+def _key(env):
+    import os
+
+    k = os.environ.get(env)
+    if not k:
+        raise HTTPException(503, f"web_lookup unavailable: {env} is not set")
+    return k
+
+
+def _tavily(q, n):
+    import json as _json
+    import urllib.request
+
+    body = _json.dumps({"query": q, "max_results": 8, "search_depth": "basic"}).encode()  # 1 credit; filtered to n later
+    req = urllib.request.Request(
+        "https://api.tavily.com/search",
+        data=body,
+        method="POST",
+        headers={"Content-Type": "application/json", "Authorization": "Bearer " + _key("TAVILY_API_KEY")},
+    )
+    data = _http_json(req)
+    return [
+        {
+            "title": x.get("title") or "",
+            "url": x.get("url"),
+            "snippet": re.sub(r"\s+", " ", x.get("content") or "").strip()[:400],
+            "score": x.get("score"),
+        }
+        for x in data.get("results") or []
+    ]
+
+
+def _brave(q, n):
+    import urllib.parse
+    import urllib.request
+
+    url = "https://api.search.brave.com/res/v1/web/search?" + urllib.parse.urlencode({"q": q, "count": n})
+    req = urllib.request.Request(url, headers={"Accept": "application/json", "X-Subscription-Token": _key("BRAVE_API_KEY")})
+    data = _http_json(req)
+    strip = lambda s: re.sub(r"<[^>]+>", "", s or "").replace("&#x27;", "'").replace("&quot;", '"').replace("&amp;", "&")
+    return [
+        {"title": strip(x.get("title")), "url": x.get("url"), "snippet": strip(x.get("description"))[:400]}
+        for x in ((data.get("web") or {}).get("results") or [])[:n]
+    ]
+
+
+WEB_PROVIDERS = {"tavily": _tavily, "brave": _brave}
+WEB_KEYS = {"tavily": "TAVILY_API_KEY", "brave": "BRAVE_API_KEY"}
+# social / video pages: snippets are profile lists, transcripts or comment fragments, not facts
+WEB_SKIP = re.compile(
+    r"(?:^|\.)(?:facebook|instagram|tiktok|twitter|x|pinterest|youtube|tumblr|linkedin|threads)\.com$|(?:^|\.)youtu\.be$"
+)
+WEB_MIN_SCORE = 0.3
+
+
+def _useful(results, n=3):
+    """The results the model sees: no social/video pages, no low-relevance hits, at most n. The cache keeps all of them."""
+    import urllib.parse
+
+    out = []
+    for x in results:
+        host = (urllib.parse.urlparse(x.get("url") or "").hostname or "").lower()
+        if (
+            WEB_SKIP.search(host)
+            or (x.get("score") is not None and x["score"] < WEB_MIN_SCORE)
+            or len(x.get("snippet") or "") < 40
+        ):
+            continue
+        out.append({"title": x["title"], "url": x["url"], "snippet": x["snippet"]})
+    return out[:n]
+
+
+def web_lookup_available():
+    """web_lookup is offered to models only when it can answer: a key for the provider is set, or offline cache replay is on."""
+    import os
+
+    p = os.environ.get("WEB_SEARCH_PROVIDER", "tavily")
+    return os.environ.get("ATLAS_WEB_OFFLINE") == "1" or bool(os.environ.get(WEB_KEYS.get(p, "")))
+
+
+def web_provider():
+    import os
+
+    p = os.environ.get("WEB_SEARCH_PROVIDER", "tavily")
+    if p not in WEB_PROVIDERS:
+        raise HTTPException(503, f"unknown WEB_SEARCH_PROVIDER {p!r}; use one of {sorted(WEB_PROVIDERS)}")
+    return p
+
+
+async def t_web_lookup(query):
+    """Outside facts (narration, awards, adaptations, author facts) that the catalogue does not hold. Cached per normalised query;
+    with ATLAS_WEB_OFFLINE=1 only the cache is used (deterministic replay)."""
+    import json as _json
+    import os
+
+    q = _norm_query(query)
+    if len(q) < 3:
+        raise HTTPException(400, "web_lookup needs a query")
+    f = _web_cache_file(q)
+    if f.exists():
+        c = _json.loads(f.read_text())
+        return {"query": c["query"], "results": _useful(c["results"]), "cached": True}
+    if os.environ.get("ATLAS_WEB_OFFLINE") == "1":
+        raise HTTPException(404, f"web_lookup offline and not cached: {q!r}")
+    prov = web_provider()
+    res = await asyncio.to_thread(WEB_PROVIDERS[prov], q, 5)
+    f.parent.mkdir(parents=True, exist_ok=True)
+    f.write_text(_json.dumps({"query": q, "results": res, "source": prov, "at": time.strftime("%Y-%m-%d %H:%M:%S")}))
+    return {"query": q, "results": _useful(res), "cached": False}
+
+
 TOOLS = {
     "get_view_state": (
         t_get_view_state,
@@ -766,7 +980,35 @@ TOOLS = {
     "similar_books": (
         t_similar_books,
         "Nearest books by description embedding (not by map position). Flags which ones are in the current view.",
-        {"title": {"type": "string"}, "i": {"type": "integer"}, "k": {"type": "integer", "default": 10}},
+        {
+            "title": {"type": "string"},
+            "i": {"type": "integer"},
+            "k": {"type": "integer", "default": 10},
+            "only_in_view": {
+                "type": "boolean",
+                "default": False,
+                "description": "true = only neighbours inside the current zoom AND slider filters (filter first, then rank)",
+            },
+        },
+    ),
+    "highlight_books": (
+        t_highlight_books,
+        "Ring up to 10 books on the map (yellow ring + ranked tag, in the order given) and frame the view on them. Use for the final picks of a recommendation. Replaces earlier highlights. Prefer ids (i) from tool results; titles must be exact.",
+        {
+            "titles": {"type": "array", "items": {"type": "string"}},
+            "ids": {"type": "array", "items": {"type": "integer"}},
+            "label": {"type": "string", "description": "optional short caption, e.g. 'close to The Hunger Games, 4.5+'"},
+        },
+    ),
+    "get_book_details": (
+        t_get_book_details,
+        "One book's details from the catalogue: description (first ~600 chars), tags, pages, series, year, rating, number of ratings. Use for finalists only, not for every candidate.",
+        {"title": {"type": "string"}, "i": {"type": "integer"}},
+    ),
+    "web_lookup": (
+        t_web_lookup,
+        "Web search for outside facts the catalogue does not hold (narration point of view, awards, adaptations, author facts). Use only when the data cannot answer. Returns up to 5 results (title, url, snippet).",
+        {"query": {"type": "string"}},
     ),
     "recommend_start": (
         t_recommend_start,
@@ -786,8 +1028,26 @@ TOOLS = {
 }
 
 
+# arguments a call must always carry (tools that take "title or i" are checked by agent._guard instead)
+REQUIRED = {
+    "search_book": ["title"],
+    "zoom_to_topic": ["topic"],
+    "zoom_to_author": ["author"],
+    "recommend_answer": ["session", "option"],
+    "web_lookup": ["query"],
+}
+
+
 def tool_list():
-    return [{"name": n, "description": d, "inputSchema": {"type": "object", "properties": p}} for n, (f, d, p) in TOOLS.items()]
+    return [
+        {
+            "name": n,
+            "description": d,
+            "inputSchema": {"type": "object", "properties": p} | ({"required": REQUIRED[n]} if n in REQUIRED else {}),
+        }
+        for n, (f, d, p) in TOOLS.items()
+        if n != "web_lookup" or web_lookup_available()
+    ]
 
 
 async def call_tool(name, args):

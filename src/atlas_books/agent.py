@@ -309,7 +309,9 @@ You control the map with tools; the user's screen updates immediately:
 - zoom_to_topic(topic): zoom to where a genre/theme concentrates (sci-fi, fantasy, romance, mystery, horror...).
 - zoom_to_author(author); zoom(factor) (>1 in, <1 out, direction pans); set_view(reset=true) for the whole map.
 - set_filters(year=[a,b], rating=[a,b], ratings_count=[a,b], pages=[a,b]): other sliders are KEPT automatically. Never use clear=true unless the user explicitly asks to reset or clear all filters. Pass [] to remove one filter.
-- top_rated_in_view, list_books_in_view, similar_books, search_book, get_view_state for information.
+- top_rated_in_view, list_books_in_view, similar_books (only_in_view=true ranks neighbours under the current zoom and filters), search_book, get_view_state for information.
+- get_book_details(i or title): blurb, tags, pages, series; for finalists only. web_lookup(query): outside facts, only when the data cannot answer.
+- highlight_books(ids or titles): ring your final picks on the map, exactly as many as the user asked for.
 Rules: if the user asks to see, filter, narrow or move anything, CALL THE TOOL (do not just describe it). Then answer in at most 4 sentences or 5 bullets, recommending only books from tool results or CURRENT VIEW (title, author, year, rating). No preamble."""
 
 
@@ -357,8 +359,38 @@ def compact_result(name, r):
         return {"books_in_view": r["books_in_view"], "books": [bk(b) for b in r["books"]]}
     if name == "search_book":
         return {"matches": [bk(b) + f" i={b['i']}" for b in r["matches"]]}
-    if name == "similar_books":
-        return {"book": bk(r["book"]), "similar": [bk(b) for b in r["similar"]]}
+    if name == "similar_books":  # ratings count, id and in-view flag let the model filter, rank and pick the right edition
+        return {
+            "book": bk(r["book"]) + f" i={r['book']['i']}",
+            "similar": [
+                bk(b)
+                + f" [{b.get('ratings_count') or 0:,} ratings] i={b['i']}"
+                + (" in_view" if b.get("in_current_view") else "")
+                for b in r["similar"]
+            ],
+        } | ({"only_in_view": True} if r.get("only_in_view") else {})
+    if name == "get_book_details":
+        return {
+            "book": bk(r) + f" [{r.get('ratings_count') or 0:,} ratings] i={r['i']}",
+            "series": f"{r['series']['name']} #{r['series']['number']}" if r.get("series") else None,
+            "pages": r.get("pages"),
+            "tags": r.get("tags"),
+            "description": r.get("description"),
+        }
+    if name == "highlight_books":
+        s = r["summary"]
+        return {
+            "ok": True,
+            "highlighted": [
+                f"{b['rank']}. " + bk(b) + ("" if b.get("in_current_view") else " (hidden by filters)") for b in r["highlighted"]
+            ],
+            "now_in_view": {"description": s["description"], "books_in_view": s["books_in_view"]},
+        }
+    if name == "web_lookup":
+        return {
+            "query": r["query"],
+            "results": [{"title": x["title"], "url": x["url"], "snippet": x["snippet"]} for x in r["results"]],
+        }
     if name == "get_user_profile":
         return r
     if name == "top_rated_in_view":
@@ -411,6 +443,14 @@ def _guard(name, args, utext):
             return "focus_book needs title"
         if args.get("keep_selections") is False and not RESET_INTENT.search(utext or ""):
             args["keep_selections"] = True
+    if name in ("get_book_details", "similar_books") and not args.get("title") and args.get("i") is None:
+        return f"{name} needs title or i"
+    if name == "highlight_books":
+        n = len(args.get("titles") or []) + len(args.get("ids") or [])
+        if n == 0:
+            return "highlight_books needs titles or ids"
+        if n > 10:
+            return "highlight_books takes at most 10 books"
     if name == "set_view" and not args.get("reset") and any(args.get(k) is None for k in ("x_min", "x_max", "y_min", "y_max")):
         return "set_view needs x_min,x_max,y_min,y_max or reset=true; to zoom to a book use focus_book, to zoom in/out use zoom"
     if name == "zoom":
@@ -431,6 +471,9 @@ def _valid(name, args, tools):
     bad = [k for k in args if k not in props]
     if bad:
         return f"unknown argument(s) {bad} for {name}; allowed: {list(props)}"
+    miss = [k for k in t["inputSchema"].get("required", []) if args.get(k) in (None, "")]
+    if miss:
+        return f"missing required argument(s) {miss} for {name}"
     for k, v in args.items():
         ty = props[k].get("type")
         if ty == "array" and not isinstance(v, list):
@@ -443,130 +486,224 @@ def _valid(name, args, tools):
     return None
 
 
-async def _ollama(messages, tools, call_tool, trace, view_state, model=None, backend="ollama"):
-    T = [
+LLM_HIDDEN = ("get_user_profile", "recommend_start", "recommend_answer")
+
+
+def llm_tools(tools):
+    """Tool schemas in function-calling format, minus the wizard/profile tools the LLM loop never sees."""
+    return [
         {"type": "function", "function": {"name": t["name"], "description": t["description"], "parameters": t["inputSchema"]}}
         for t in tools
-        if t["name"] not in ("get_user_profile", "recommend_start", "recommend_answer")
+        if t["name"] not in LLM_HIDDEN
     ]
-    utext = messages[-1]["content"] if messages else ""
-    errors = 0
+
+
+def build_messages(messages, view_state):
+    """SYSTEM + last 5 history messages + one user message carrying CURRENT VIEW and USER PROFILE: exactly what the student sees."""
     prof = load_profile()
     ptxt = (prof["profile_md"] or "")[:1200]
     ctx = f"CURRENT VIEW: {json.dumps(compact_view(view_state()), ensure_ascii=False)}\nUSER PROFILE: {ptxt}"
     hist = [m for m in messages[-6:-1]]
-    msgs = (
+    return (
         [{"role": "system", "content": SYSTEM}]
         + hist
         + [{"role": "user", "content": ctx + "\n\nUSER: " + messages[-1]["content"]}]
     )
+
+
+def snapshot(view_state):
+    """Small state summary for traces: viewport, active filters, books in view, focus and highlights."""
+    v = view_state()
+    s = v["summary"]
+    return {
+        "viewport": json.loads(json.dumps((v.get("state") or {}).get("viewport"), default=str)),
+        "filters": {k: x for k, x in (s.get("filters") or {}).items() if x},
+        "description": s["description"],
+        "books_in_view": s["books_in_view"],
+        "focus": (s.get("focus") or {}).get("title"),
+        "highlights": [r["title"] for r in (v.get("highlights") or {}).get("recs") or []],
+    }
+
+
+def ollama_step(model=None, temperature=0.15, num_ctx=6144):
+    """One model round against Ollama /api/chat; appends the assistant message (Ollama shape) to msgs."""
+
+    async def step(msgs, T, k):
+        body = {
+            "model": model or OLLAMA_MODEL(),
+            "messages": msgs,
+            "tools": T,
+            "stream": False,
+            "keep_alive": "30m",
+            "options": {"temperature": temperature, "num_ctx": num_ctx},
+        }
+        try:
+            r = await post(OLLAMA + "/api/chat", {}, body)
+        except HTTPError:
+            await asyncio.sleep(1)
+            r = await post(OLLAMA + "/api/chat", {}, body)
+        m = r.get("message", {})
+        calls = m.get("tool_calls") or []
+        msgs.append({"role": "assistant", "content": m.get("content", ""), **({"tool_calls": calls} if calls else {})})
+        return m, calls, r
+
+    return step
+
+
+def openai_step(base_url=None, api_key=None, model=None, temperature=0.15, extra_system=None):
+    """One model round against an OpenAI-compatible endpoint (default: the one chosen in the UI). extra_system is sent to the
+    model as a second system message but never stored in msgs (teacher-only hints)."""
+
+    async def step(msgs, T, k):
+        base, key, mdl = base_url or CONF["base_url"], api_key if api_key is not None else CONF["api_key"], model or CONF["model"]
+        out = [
+            x if x.get("role") != "tool" else {"role": "tool", "tool_call_id": x["tool_call_id"], "content": x["content"]}
+            for x in msgs
+        ]
+        if extra_system:
+            out = out[:1] + [{"role": "system", "content": extra_system}] + out[1:]
+        body = {"model": mdl, "messages": out, "tools": T, "temperature": temperature}
+        try:
+            r = await asyncio.to_thread(_openai_post_sync, base, key, body)
+        except HTTPError as e:
+            if "cannot reach" in str(e):
+                raise
+            await asyncio.sleep(1)
+            r = await asyncio.to_thread(_openai_post_sync, base, key, body)
+        m = (r.get("choices") or [{}])[0].get("message") or {}
+        raw = m.get("tool_calls") or []
+        calls = [{"id": c.get("id") or f"call_{k}_{j}", "function": c.get("function") or {}} for j, c in enumerate(raw)]
+        msgs.append(
+            {
+                "role": "assistant",
+                "content": m.get("content") or "",
+                **(
+                    {
+                        "tool_calls": [
+                            {
+                                "id": c["id"],
+                                "type": "function",
+                                "function": {
+                                    "name": c["function"].get("name"),
+                                    "arguments": c["function"].get("arguments")
+                                    if isinstance(c["function"].get("arguments"), str)
+                                    else json.dumps(c["function"].get("arguments") or {}),
+                                },
+                            }
+                            for c in calls
+                        ]
+                    }
+                    if calls
+                    else {}
+                ),
+            }
+        )
+        return m, calls, r
+
+    return step
+
+
+def _plain(x):
+    return json.loads(json.dumps(x, default=str))
+
+
+async def run_agent_loop(msgs, tools, call_tool, trace, utext, step, view_state=None, hook=None, max_rounds=6):
+    """The shared Atlas AI loop (student, local models and teacher): step() asks the model and appends its message; every call
+    passes _valid then _guard, runs, and the compacted result goes back as a tool message (max 3500 chars). hook(event), if
+    given, receives per round a 'model' event (raw output) and per call a 'tool' event (raw and normalised args, raw and
+    compacted result, state snapshot), then 'final', 'abort' or 'stop'. The hook only observes: behaviour is the same without it."""
+    T = llm_tools(tools)
+    errors = 0
     retried = False
-    for step in range(6):
-        if backend == "ollama":
-            body = {
-                "model": model or OLLAMA_MODEL(),
-                "messages": msgs,
-                "tools": T,
-                "stream": False,
-                "keep_alive": "30m",
-                "options": {"temperature": 0.15, "num_ctx": 6144},
-            }
-            try:
-                r = await post(OLLAMA + "/api/chat", {}, body)
-            except HTTPError:
-                await asyncio.sleep(1)
-                r = await post(OLLAMA + "/api/chat", {}, body)
-            m = r.get("message", {})
-            calls = m.get("tool_calls") or []
-            msgs.append({"role": "assistant", "content": m.get("content", ""), **({"tool_calls": calls} if calls else {})})
-        else:  # OpenAI-compatible endpoint chosen in the UI: same prompt, validation, guards and confirmations
-            body = {
-                "model": CONF["model"],
-                "messages": [
-                    x if x.get("role") != "tool" else {"role": "tool", "tool_call_id": x["tool_call_id"], "content": x["content"]}
-                    for x in msgs
-                ],
-                "tools": T,
-                "temperature": 0.15,
-            }
-            try:
-                r = await asyncio.to_thread(_openai_post_sync, CONF["base_url"], CONF["api_key"], body)
-            except HTTPError as e:
-                if "cannot reach" in str(e):
-                    raise
-                await asyncio.sleep(1)
-                r = await asyncio.to_thread(_openai_post_sync, CONF["base_url"], CONF["api_key"], body)
-            m = (r.get("choices") or [{}])[0].get("message") or {}
-            raw = m.get("tool_calls") or []
-            calls = [{"id": c.get("id") or f"call_{step}_{k}", "function": c.get("function") or {}} for k, c in enumerate(raw)]
-            msgs.append(
-                {
-                    "role": "assistant",
-                    "content": m.get("content") or "",
-                    **(
-                        {
-                            "tool_calls": [
-                                {
-                                    "id": c["id"],
-                                    "type": "function",
-                                    "function": {
-                                        "name": c["function"].get("name"),
-                                        "arguments": c["function"].get("arguments")
-                                        if isinstance(c["function"].get("arguments"), str)
-                                        else json.dumps(c["function"].get("arguments") or {}),
-                                    },
-                                }
-                                for c in calls
-                            ]
-                        }
-                        if calls
-                        else {}
-                    ),
-                }
+    for k in range(max_rounds):
+        m, calls, raw = await step(msgs, T, k)
+        if hook:
+            hook(
+                {"type": "model", "round": k, "content": m.get("content") or "", "tool_calls": _plain(calls), "raw": _plain(raw)}
             )
         if not calls:
             txt = (m.get("content") or "").strip()
             if not txt and not retried:
                 retried = True
                 msgs.append({"role": "user", "content": "Answer the user now, briefly."})
+                if hook:
+                    hook({"type": "nudge", "round": k})
                 continue
+            if hook:
+                hook({"type": "final", "round": k, "text": txt})
             return txt
         for c in calls:
             f = c.get("function", {})
             name = f.get("name")
             args = f.get("arguments") or {}
+            raw_args = _plain(args)
             if isinstance(args, str):
                 try:
                     args = json.loads(args)
                 except Exception:
                     args = {}
             err = _valid(name, args, tools) or _guard(name, args, utext)
+            rawres = None
             if err:
                 trace.append({"tool": name, "args": args, "error": err})
                 res = {"error": err + " Fix the arguments and call the tool again."}
                 errors += 1
                 if errors > 2:
+                    if hook:
+                        hook(
+                            {
+                                "type": "tool",
+                                "round": k,
+                                "call_id": c.get("id"),
+                                "name": name,
+                                "raw_args": raw_args,
+                                "args": _plain(args),
+                                "error": err,
+                                "raw_result": None,
+                                "result": json.dumps(res, ensure_ascii=False),
+                                "state": snapshot(view_state) if view_state else None,
+                            }
+                        )
+                        hook({"type": "abort", "round": k, "reason": "3 invalid calls"})
                     return '(I could not turn that into a valid map action; try rephrasing, e.g. "only books after 2010" or "show me <a title>".)'
             else:
                 try:
-                    raw = await call_tool(name, args)
-                    res = compact_result(name, raw)
+                    rawres = await call_tool(name, args)
+                    res = compact_result(name, rawres)
                     trace.append(
                         {"tool": name, "args": args}
-                        | ({"label": raw["focus"]["title"]} if isinstance(raw, dict) and raw.get("focus") else {})
+                        | ({"label": rawres["focus"]["title"]} if isinstance(rawres, dict) and rawres.get("focus") else {})
                     )
                 except Exception as e:
                     res = {"error": str(getattr(e, "detail", e))[:200]}
                     trace.append({"tool": name, "args": args, "error": res["error"]})
-            msgs.append(
-                {
-                    "role": "tool",
-                    "tool_name": name,
-                    "tool_call_id": c.get("id") or name,
-                    "content": json.dumps(res, ensure_ascii=False, default=str)[:3500],
-                }
-            )
-    return "(stopped after 6 tool rounds)"
+            content = json.dumps(res, ensure_ascii=False, default=str)[:3500]
+            msgs.append({"role": "tool", "tool_name": name, "tool_call_id": c.get("id") or name, "content": content})
+            if hook:
+                hook(
+                    {
+                        "type": "tool",
+                        "round": k,
+                        "call_id": c.get("id") or name,
+                        "name": name,
+                        "raw_args": raw_args,
+                        "args": _plain(args),
+                        "error": err or (res.get("error") if isinstance(res, dict) else None),
+                        "raw_result": _plain(rawres),
+                        "result": content,
+                        "state": snapshot(view_state) if view_state else None,
+                    }
+                )
+    if hook:
+        hook({"type": "stop", "round": max_rounds})
+    return f"(stopped after {max_rounds} tool rounds)"
+
+
+async def _ollama(messages, tools, call_tool, trace, view_state, model=None, backend="ollama", hook=None):
+    utext = messages[-1]["content"] if messages else ""
+    msgs = build_messages(messages, view_state)
+    step = ollama_step(model) if backend == "ollama" else openai_step()  # custom endpoint: same prompt, validation, guards
+    return await run_agent_loop(msgs, tools, call_tool, trace, utext, step, view_state, hook)
 
 
 HELP = (
@@ -650,7 +787,7 @@ async def _commands(text, call_tool, trace):
     return HELP
 
 
-MAP_TOOLS = {"set_filters", "set_view", "focus_book", "zoom", "zoom_to_topic", "zoom_to_author"}
+MAP_TOOLS = {"set_filters", "set_view", "focus_book", "zoom", "zoom_to_topic", "zoom_to_author", "highlight_books"}
 
 
 def _changes(trace):
@@ -687,10 +824,13 @@ def _changes(trace):
             ch.append(f"zoomed to the {g.get('topic')} area")
         elif n == "zoom_to_author":
             ch.append(f"zoomed to books by {g.get('author')}")
+        elif n == "highlight_books":
+            k = len(g.get("titles") or []) + len(g.get("ids") or [])
+            ch.append(f"highlighted {k} book{'s' if k != 1 else ''}")
     return ch
 
 
-async def chat(messages, tools, call_tool, view_state, H=None, model=None, rules=True):
+async def chat(messages, tools, call_tool, view_state, H=None, model=None, rules=True, hook=None):
     trace = []
     p = provider()
     text = messages[-1]["content"] if messages else ""
@@ -731,9 +871,9 @@ async def chat(messages, tools, call_tool, view_state, H=None, model=None, rules
                 trace.append({"tool": "rules", "args": {}, "error": str(getattr(e, "detail", e))[:200]})
     try:
         if p == "ollama":
-            text = await _ollama(messages, tools, call_tool, trace, view_state, model)
+            text = await _ollama(messages, tools, call_tool, trace, view_state, model, hook=hook)
         elif p == "custom":
-            text = await _ollama(messages, tools, call_tool, trace, view_state, backend="openai")
+            text = await _ollama(messages, tools, call_tool, trace, view_state, backend="openai", hook=hook)
         elif p == "anthropic":
             text = await _anthropic(messages, tools, call_tool, trace)
         elif p:
