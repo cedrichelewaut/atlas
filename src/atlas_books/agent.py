@@ -356,7 +356,7 @@ def compact_result(name, r):
     if name == "get_view_state":
         return compact_view(r)
     if name == "list_books_in_view":
-        return {"books_in_view": r["books_in_view"], "books": [bk(b) for b in r["books"]]}
+        return {"books_in_view": r["books_in_view"], "books": [bk(b) + f" i={b['i']}" for b in r["books"]]}
     if name == "search_book":
         return {"matches": [bk(b) + f" i={b['i']}" for b in r["matches"]]}
     if name == "similar_books":  # ratings count, id and in-view flag let the model filter, rank and pick the right edition
@@ -396,14 +396,14 @@ def compact_result(name, r):
     if name == "top_rated_in_view":
         return {
             "books_in_view": r["books_in_view"],
-            "top_rated": [bk(b) + f" [{b['ratings_count']:,} ratings]" for b in r["books"]],
+            "top_rated": [bk(b) + f" [{b['ratings_count']:,} ratings] i={b['i']}" for b in r["books"]],
         }
     out = {"ok": True, "applied_in_browser": r.get("applied_in_browser")}
     if "focus" in r and r["focus"]:
         out["focused"] = bk(r["focus"])
     if "author" in r:
         out["author"] = r["author"]
-        out["their_books"] = [bk(b) for b in r.get("books", [])]
+        out["their_books"] = [bk(b) + f" i={b['i']}" for b in r.get("books", [])]
     if "topic" in r:
         out["topic"] = r["topic"]
         out["topic_lift"] = r.get("lift")
