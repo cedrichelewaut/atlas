@@ -675,7 +675,7 @@ async def run_agent_loop(msgs, tools, call_tool, trace, utext, step, view_state=
                         | ({"label": rawres["focus"]["title"]} if isinstance(rawres, dict) and rawres.get("focus") else {})
                     )
                 except Exception as e:
-                    res = {"error": str(getattr(e, "detail", e))[:200]}
+                    res = {"error": str(getattr(e, "detail", e))[:900]}
                     trace.append({"tool": name, "args": args, "error": res["error"]})
             content = json.dumps(res, ensure_ascii=False, default=str)[:3500]
             msgs.append({"role": "tool", "tool_name": name, "tool_call_id": c.get("id") or name, "content": content})
