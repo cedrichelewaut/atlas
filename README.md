@@ -12,7 +12,11 @@ click a dot to open the book's page, or just ask *Atlas AI*: "books like Dracula
 fiction", "recommend me something from here". You and Atlas AI drive **one shared view**, so whatever it does
 happens on your screen, and it can see what you're looking at.
 
-![Atlas: the bundled Project Gutenberg sample, after asking "books like Dracula"](docs/screenshot.png)
+![Atlas: the bundled Project Gutenberg sample, after asking "books like Dracula" — recommended picks are ringed and ranked on the map](docs/screenshot.png)
+
+On a phone, Atlas opens straight on the map; the bottom tab bar switches to *Ask Atlas*:
+
+![Atlas on a phone: map first, tab bar at the bottom](docs/screenshot-mobile.png)
 
 ## Contents
 
