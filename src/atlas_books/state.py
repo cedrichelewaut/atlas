@@ -42,24 +42,37 @@ def book_url(i):
     return URLS[int(i)]
 
 
-_GL = {}
+def _ntitle(t):
+    """Normalised title for matching: lowercase, no leading article, no '(Series, #n)' suffix (same as tools._norm)."""
+    return re.sub(r"^(the|a|an) ", "", re.sub(r"\s*\(.*?\)\s*", "", (t or "").lower()).strip(" .?!\"'"))
 
 
 def mention_links(text, limit=20):
-    """Map *Title* / **Title** spans in a reply to book URLs (exact title match, most-rated edition)."""
+    """Map *Title* / **Title** spans in a reply to book URLs.
+
+    Several rows can share a title (editions, or different books with the same name — e.g. two books called
+    "The Giver"). Resolve like the tools do: article/series-suffix-insensitive match, most-rated wins; if the
+    reply names an author, a candidate whose author appears in the reply text wins outright."""
     out = {}
+    tl = (text or "").lower()
     for t in re.findall(r"\*\*([^*\n]{2,140})\*\*|\*([^*\n]{2,140})\*", text or ""):
         t = (t[0] or t[1]).strip()
-        if not t or t in out or len(out) >= limit:
+        nq = _ntitle(t)
+        if not t or t in out or len(out) >= limit or len(nq) < 3:
             continue
-        hit = B.filter(LOWER == t.lower())
-        if hit.height == 0:
-            if "ns" not in _GL:
-                _GL["ns"] = LOWER.str.replace(r"\s*\([^)]*#[^)]*\)$", "")  # title without '(Series, #n)'
-            hit = B.filter(_GL["ns"] == t.lower())
-        if hit.height:
-            out[t] = book_url(hit.sort("ratings_count", descending=True)["i"][0])
-    return {k: v for k, v in out.items() if v}
+        best = None
+        for r in B.filter(LOWER.str.contains(nq, literal=True)).iter_rows(named=True):
+            nt = _ntitle(r["title"])
+            if nt != nq and not (nt.startswith(nq) and len(nq) >= max(5, 0.5 * len(nt))):
+                continue
+            au = (r["author"] or "").lower()
+            sc = (r["ratings_count"] or 0) * (5 if nt == nq else 1) + (10**12 if au and au in tl else 0)
+            if best is None or sc > best[0]:
+                best = (sc, r["i"])
+        u = book_url(best[1]) if best is not None else None
+        if u:
+            out[t] = u
+    return out
 
 
 X0, X1 = [float(v) for v in np.percentile(B["x"].to_numpy(), [0.3, 99.7])]

@@ -200,3 +200,36 @@ def test_wizard_refuses_an_empty_view(sample_books):
 
     r = asyncio.run(rec.start(sample_books, pl.col("year") > 3000))
     assert "error" in r
+
+
+# ---------------------------------------------------------------- mention link disambiguation
+
+
+def test_mention_links_same_title(monkeypatch):
+    """Two books called 'The Giver' (Lynn Hall 1985 vs Lois Lowry 1993): the bolded title must link to the
+    book the reply is about — by author when the reply names one, else the most-rated edition."""
+    from atlas_books import state
+
+    df = pl.DataFrame(
+        {
+            "i": [0, 1],
+            "title": ["The Giver", "The Giver (The Giver, #1)"],
+            "author": ["Lynn Hall", "Lois Lowry"],
+            "ratings_count": [34, 1_361_154],
+        }
+    )
+    monkeypatch.setattr(state, "B", df)
+    monkeypatch.setattr(state, "LOWER", df["title"].str.to_lowercase())
+    monkeypatch.setattr(
+        state, "URLS", ["https://www.goodreads.com/book/show/1856057", "https://www.goodreads.com/book/show/3636"]
+    )
+    assert state.mention_links("**The Giver** by Lois Lowry (1993), 4.12") == {
+        "The Giver": "https://www.goodreads.com/book/show/3636"
+    }
+    assert state.mention_links("**The Giver** by Lynn Hall (1985)") == {
+        "The Giver": "https://www.goodreads.com/book/show/1856057"
+    }
+    assert state.mention_links("have you read **The Giver**?") == {"The Giver": "https://www.goodreads.com/book/show/3636"}
+    assert state.mention_links("**The Giver (The Giver, #1)** is great") == {
+        "The Giver (The Giver, #1)": "https://www.goodreads.com/book/show/3636"
+    }

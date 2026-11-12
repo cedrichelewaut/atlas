@@ -311,7 +311,8 @@ def mention_rows(text, limit=8):
         h = title_lookup(t) if len(t) > 2 else None
         if (
             h
-            and h["title"].strip().lower() == t.lower()
+            and _norm(h["title"])
+            == _norm(t)  # series suffix / leading article don't matter: "The Giver" -> "The Giver (The Giver, #1)"
             and h["i"] not in [o["i"] for o in out]
             and not (FOCUS["book"] and h["i"] == FOCUS["book"]["i"])
         ):
