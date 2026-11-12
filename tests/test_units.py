@@ -72,6 +72,17 @@ def test_parse_leaves_chat_to_the_llm():
     assert not librarian.recognised(P("who wrote the first vampire novel?"))
 
 
+def test_what_is_questions_are_not_map_commands():
+    # "what is X" must fall through to the LLM (which can answer, or use web_lookup),
+    # not zoom to a topic that happens to match X
+    for q in ("what is horror", "what is science fiction", "explain fae to me", "what is a fae?"):
+        p = P(q)
+        assert not librarian.recognised(p) and p.topic is None and p.focus is None and p.like is None, q
+    # directives with the same word still parse as map commands
+    assert P("zoom to horror").topic == "horror"
+    assert P("show me science fiction").topic == "science fiction"
+
+
 def test_fmt_range_and_confirm():
     assert librarian.fmt_range("year", [1990, 2000]) == "years 1990–2000"
     assert librarian.fmt_range("pages", [0, 300]) == "under 300 pages"

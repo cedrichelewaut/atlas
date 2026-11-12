@@ -61,7 +61,9 @@ def parse(text, H):
     p = P(text)
     t = p.t
     question = bool(
-        re.match(r"\s*(is|are|does|do|did|who|whom|why|how|when|can you tell|tell me about|what's the difference)\b", t)
+        re.match(
+            r"\s*(is|are|does|do|did|who|whom|why|how|when|what|explain|can you tell|tell me about|what's the difference)\b", t
+        )
     )
     # ---- questions about the view ----
     if p.eat(
