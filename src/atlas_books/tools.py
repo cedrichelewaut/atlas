@@ -757,7 +757,7 @@ def title_lookup(q, strict=True):
 
 
 def top_rated(state, limit=30, m=1000.0):
-    if not HAS_RATING:  # no ratings in this dataset (e.g. the Gutenberg sample): most popular first
+    if not HAS_RATING:  # no ratings in this dataset: most popular first
         v = B.filter(filt(state)).sort("ratings_count", descending=True, nulls_last=True).head(limit)
         return None, [bookrow(r) | {"score": None} for r in v.iter_rows(named=True)]
     v = B.filter(filt(state)).filter(pl.col("rating").is_not_null())

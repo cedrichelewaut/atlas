@@ -15,8 +15,8 @@ git config core.hooksPath .githooks     # enable the committed pre-commit hook (
 ## Checks
 
 - `ruff check && ruff format` — lint and format (line-length 130, config in `pyproject.toml`). The pre-commit hook runs both in check mode on every commit.
-- `pytest -q` — the suite boots a live `atlas demo` server on a free port with an isolated `ATLAS_HOME`; it never touches your real `~/.atlas`. CI (`.github/workflows/ci.yml`) runs lint + the full test matrix (Python 3.10/3.11/3.13) plus an end-to-end CLI check.
-- `atlas demo` — manual smoke test in the browser.
+- `pytest -q` — the suite serves the committed fixture dataset (`tests/fixtures/testdata`) on a free port with an isolated `ATLAS_HOME`; it never touches your real `~/.atlas`. CI (`.github/workflows/ci.yml`) runs lint + the full test matrix (Python 3.10/3.11/3.13) plus an end-to-end CLI check.
+- `atlas serve` — manual smoke test in the browser on your current dataset.
 
 ## Conventions
 

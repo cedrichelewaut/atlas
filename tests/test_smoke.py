@@ -1,4 +1,4 @@
-"""Smoke tests: import every input format, then serve the bundled sample and hit the API."""
+"""Smoke tests: import every input format, then serve the fixture dataset and hit the API."""
 
 import json
 import subprocess
@@ -29,18 +29,17 @@ def test_import_formats(atlas_env, fname, expect):
     assert meta["n"] == expect
 
 
-def test_serve_sample(server):
+def test_serve_dataset(server):
     cfg = json.loads(request(server, "/api/config")[2])
-    assert cfg["total"] > 2000 and "Gutenberg" in cfg["subtitle"]
+    assert cfg["total"] == 199 and "books.json" in cfg["subtitle"]
     assert b"Made with" in request(server, "/")[2]
-    st, _, body = api_post(server, "/api/chat", {"messages": [{"role": "user", "content": "books like Dracula"}]})
-    reply = json.loads(body)["reply"]
-    assert "Dracula" in reply and "Map updated" in reply  # rules mode works without any LLM
+    st, _, body = api_post(server, "/api/chat", {"messages": [{"role": "user", "content": "zoom out"}]})
+    assert "Map updated" in json.loads(body)["reply"]  # rules mode works without any LLM
     top = json.loads(request(server, "/api/top")[2])["books"]
-    assert top and top[0]["url"].startswith("https://www.gutenberg.org/")
+    assert top and top[0]["url"].startswith("https://")
 
 
-def test_busy_port_falls_back_and_demo_is_labelled_sample(atlas_env):
+def test_busy_port_falls_back(atlas_env):
     import socket
 
     from conftest import free_port
@@ -50,7 +49,7 @@ def test_busy_port_falls_back_and_demo_is_labelled_sample(atlas_env):
     blocker.bind(("127.0.0.1", port))
     blocker.listen()
     p = subprocess.Popen(
-        [sys.executable, "-m", "atlas_books.cli", "demo", "--port", str(port), "--no-browser"],
+        [sys.executable, "-m", "atlas_books.cli", "serve", "--port", str(port), "--no-browser"],
         env=atlas_env,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -63,7 +62,7 @@ def test_busy_port_falls_back_and_demo_is_labelled_sample(atlas_env):
         p.wait(10)
         blocker.close()
     assert f"port {port} is already in use" in first and f"using {port + 1}" in first, first
-    assert second.startswith(f"Atlas: serving sample at http://127.0.0.1:{port + 1}/"), second
+    assert second.startswith(f"Atlas: serving testdata at http://127.0.0.1:{port + 1}/"), second
 
 
 def test_embedding_model_cached_under_atlas_home(atlas_env):

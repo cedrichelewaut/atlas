@@ -31,7 +31,7 @@ else
   say "without it Atlas AI runs in rules mode (filters, zoom, similar books, top rated)."
 fi
 say ""
-say "Done. Try:   atlas demo                 (bundled sample)"
+say "Done. Try:   atlas import goodreads_library_export.csv && atlas serve"
 say "       or:   atlas import mybooks.csv && atlas serve"
 if ! command -v atlas >/dev/null 2>&1; then
   BIN="${BIN:-$HOME/.local/bin}"
@@ -39,5 +39,5 @@ if ! command -v atlas >/dev/null 2>&1; then
   say "'atlas' is installed in $BIN, which is not on your PATH in this shell. Add it (uv: 'uv tool update-shell'; pipx: 'pipx ensurepath'),"
   say "then open a new terminal, or for now run:"
   say "  export PATH=\"$BIN:\$PATH\""
-  say "(or run it directly: $BIN/atlas demo)"
+  say "(or run it directly: $BIN/atlas import <your-books.csv> && $BIN/atlas serve)"
 fi

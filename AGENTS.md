@@ -7,7 +7,7 @@ coding agents load this file automatically when working in this repo.
 
 ```
 src/atlas_books/
-├── cli.py         `atlas` entry point: demo / import / serve / list / use
+├── cli.py         `atlas` entry point: import / serve / list / use
 ├── build.py       `atlas import` pipeline: read -> normalise -> textprep -> embed (fastembed) -> UMAP -> parquet + vecs + meta.json
 ├── paths.py       where things live (~/.atlas, datasets, current-dataset pointer, model cache)
 ├── store.py       dataset accessors (books.parquet, extra.parquet, meta.json, int8 vectors)
@@ -21,7 +21,7 @@ src/atlas_books/
 ├── security.py    ASGI guard: Host allowlist, same-origin checks, JSON-only + X-Atlas-Token on POSTs
 ├── textprep.py    strips marketing fluff / review quotes / library shelves from descriptions before embedding
 └── web/           single-page UI (index.html + Inter font); talks to /api/* and embeds the FlexViz iframe
-tests/             pytest; conftest.py boots a live `atlas demo` server on a free port with an isolated ATLAS_HOME
+tests/             pytest; conftest.py serves the fixture dataset (tests/fixtures/testdata) on a free port with an isolated ATLAS_HOME
 docs/              ARCHITECTURE.md, AGENT_GUIDE.md (the prompt given to the LLM), ROADMAP.md, adr/, screenshot.png
 .githooks/         committed pre-commit hook (ruff); enable with `git config core.hooksPath .githooks`
 ```

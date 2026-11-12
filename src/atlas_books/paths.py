@@ -15,8 +15,6 @@ from pathlib import Path
 
 PKG = Path(__file__).resolve().parent
 WEB = PKG / "web"
-SAMPLE_CSV = PKG / "sample" / "sample_gutenberg.csv"
-SAMPLE_BUILT = PKG / "sample" / "built"
 
 
 def home() -> Path:
@@ -48,10 +46,10 @@ def set_current(name: str) -> None:
 
 
 def data_dir() -> Path:
-    """Dataset the server opens: $ATLAS_DATA (a directory), else ~/.atlas/current, else the bundled sample."""
+    """Dataset the server opens: $ATLAS_DATA (a directory), else the dataset named in ~/.atlas/current."""
     if os.environ.get("ATLAS_DATA"):
         return Path(os.environ["ATLAS_DATA"]).expanduser()
     n = current_name()
     if n and (datasets() / n / "books.parquet").exists():
         return datasets() / n
-    return SAMPLE_BUILT
+    raise SystemExit("No dataset selected. Run `atlas import <file>` first, then `atlas serve` (see `atlas list`).")

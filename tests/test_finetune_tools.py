@@ -1,6 +1,6 @@
 """Tools and loop plumbing for synthetic training data: highlight_books, get_book_details, web_lookup (cache + offline replay),
 similar_books(only_in_view), required arguments, compacted results, the shared agent loop with its trace hook, and the
-Anthropic teacher adapter (fake client, no network). In-process on the bundled sample."""
+Anthropic teacher adapter (fake client, no network). In-process on the fixture dataset (tests/fixtures/testdata)."""
 
 import asyncio
 import json
@@ -59,11 +59,11 @@ def test_guards_for_new_tools():
 
 def test_get_book_details_by_title_and_id():
     d = run(tools.t_get_book_details(title="Dracula"))
-    assert d["i"] == 5 and d["author"] == "Bram Stoker"
+    assert d["i"] == 110 and d["author"] == "Bram Stoker"
     assert isinstance(d["tags"], list) and len(d["description"]) <= 603
-    assert run(tools.t_get_book_details(i=5))["title"] == "Dracula"
+    assert run(tools.t_get_book_details(i=110))["title"] == "Dracula"
     c = agent.compact_result("get_book_details", d)
-    assert c["book"].startswith("Dracula — Bram Stoker") and "i=5" in c["book"]
+    assert c["book"].startswith("Dracula — Bram Stoker") and "i=110" in c["book"]
     assert set(c) == {"book", "series", "pages", "tags", "description"}
 
 
@@ -86,7 +86,7 @@ def test_highlight_books_order_and_compact():
 
 
 def test_highlight_books_by_id_and_errors_keep_old_highlights():
-    run(tools.t_highlight_books(ids=[5]))
+    run(tools.t_highlight_books(ids=[110]))
     with pytest.raises(HTTPException) as e:
         run(tools.t_highlight_books(titles=["Dracula", "zzqx no such book qqz"]))
     assert e.value.status_code == 404
@@ -98,10 +98,10 @@ def test_highlight_books_by_id_and_errors_keep_old_highlights():
 
 
 def test_highlight_blocks_automatic_recs_after_chat():
-    run(tools.t_highlight_books(ids=[5]))
+    run(tools.t_highlight_books(ids=[110]))
     log = {"similar_books": {"similar": [{"i": 0}]}, "highlighted": True}
     run(tools.recs_from_chat("books like dracula", "", "llm", log))
-    assert [x["i"] for x in HIGHLIGHT["recs"]] == [5]
+    assert [x["i"] for x in HIGHLIGHT["recs"]] == [110]
 
 
 # ---------------------------------------------------------------- similar_books
@@ -112,7 +112,7 @@ def test_similar_books_only_in_view_and_compact_fields():
     r = run(tools.t_similar_books(title="Dracula", k=5, only_in_view=True))
     assert 0 < len(r["similar"]) <= 5 and all(b["in_current_view"] for b in r["similar"])
     c = agent.compact_result("similar_books", r)
-    assert c["only_in_view"] is True and c["book"].endswith("i=5")
+    assert c["only_in_view"] is True and c["book"].endswith("i=110")
     assert all(" ratings] i=" in s and s.endswith("in_view") for s in c["similar"])
     plain = agent.compact_result("similar_books", run(tools.t_similar_books(title="Dracula", k=5)))
     assert "only_in_view" not in plain and len(plain["similar"]) == 5
@@ -259,7 +259,7 @@ def test_trace_hook_records_and_does_not_change_behaviour():
     assert text == "Here is **Dracula**."
     assert [e["type"] for e in ev] == ["model", "tool", "model", "tool", "tool", "model", "final"]
     t1, t2, t3 = [e for e in ev if e["type"] == "tool"]
-    assert t1["state"]["focus"] == "Dracula" and t1["raw_result"]["focus"]["i"] == 5
+    assert t1["state"]["focus"] == "Dracula" and t1["raw_result"]["focus"]["i"] == 110
     assert json.loads(t1["result"]) == json.loads(msgs[3]["content"])  # what the model saw
     assert t2["raw_args"] == {"year": ["1800", 1900], "clear": True}  # raw model output
     assert t2["args"] == {"year": [1800.0, 1900.0]}  # after _valid/_guard: clear stripped, numbers coerced

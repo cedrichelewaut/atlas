@@ -66,7 +66,7 @@ review quotes and library shelves from descriptions) → embed locally with `BAA
 
 | Module | Role |
 |---|---|
-| `cli.py` | `atlas` entry point: `demo` / `import` / `serve` / `list` / `use`, port picking, browser open |
+| `cli.py` | `atlas` entry point: `import` / `serve` / `list` / `use`, port picking, browser open |
 | `build.py` | the import pipeline above |
 | `paths.py` / `store.py` | `~/.atlas` layout, current-dataset pointer, dataset accessors |
 | `state.py` | dataset + FlexViz dashboard spec + mirror `M` of the browser state (assembled at import; tests set `ATLAS_HOME` first) |
@@ -100,7 +100,7 @@ POSTs, same-origin + Host checks, LLM base-URL validation, keys never sent to th
 
 ## Testing
 
-`tests/conftest.py` boots a live `atlas demo` server on a free port with an isolated `ATLAS_HOME` (no LLM: rules
-mode only). `test_routes.py` exercises every GET route against it; `test_security.py`, `test_units.py`,
+`tests/conftest.py` serves the committed fixture dataset (`tests/fixtures/testdata`, 199 books) on a free port with an
+isolated `ATLAS_HOME` (no LLM: rules mode only). `test_routes.py` exercises every GET route against it; `test_security.py`, `test_units.py`,
 `test_smoke.py`, `test_finetune_tools.py` cover the guard, parser, textprep, normalisation and wizard. CI
 (`.github/workflows/ci.yml`) runs ruff + the suite on Python 3.10/3.11/3.13 and an end-to-end CLI check.

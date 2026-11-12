@@ -116,7 +116,7 @@ def test_non_loopback_bind_warns(atlas_env, tmp_path):
 
     env = dict(atlas_env, ATLAS_HOME=str(tmp_path))
     p = subprocess.Popen(
-        [sys.executable, "-m", "atlas_books.cli", "demo", "--host", "0.0.0.0", "--port", str(free_port()), "--no-browser"],
+        [sys.executable, "-m", "atlas_books.cli", "serve", "--host", "0.0.0.0", "--port", str(free_port()), "--no-browser"],
         env=env,
         stderr=subprocess.PIPE,
         stdout=subprocess.DEVNULL,

@@ -1,6 +1,5 @@
 """atlas: map your books and explore them with Atlas AI.
 
-atlas demo                         open the bundled sample (3,000 public-domain novels from Project Gutenberg)
 atlas import books.csv             build a map from your own list (Goodreads export, CSV, JSON, Parquet)
 atlas import --hf user/dataset     ... or from a Hugging Face dataset you have access to
 atlas serve                        open the current dataset in the browser
@@ -106,17 +105,12 @@ def cmd_serve(a):
             sys.exit(f"no dataset '{a.dataset}' (see: atlas list)")
     else:
         d = paths.data_dir()
-    _serve(d, a.host, a.port, not a.no_browser, label="sample" if d == paths.SAMPLE_BUILT else None)
-
-
-def cmd_demo(a):
-    _serve(paths.SAMPLE_BUILT, a.host, a.port, not a.no_browser, label="sample")
+    _serve(d, a.host, a.port, not a.no_browser)
 
 
 def cmd_list(a):
     cur = paths.current_name()
     rows = [d for d in sorted(paths.datasets().iterdir()) if (d / "books.parquet").exists()]
-    print(f"sample (bundled){'   <- current' if not cur else ''}")
     for d in rows:
         import json
 
@@ -125,13 +119,9 @@ def cmd_list(a):
 
 
 def cmd_use(a):
-    if a.name == "sample":
-        f = paths.home() / "current"
-        f.unlink(missing_ok=True)
-    elif not (paths.datasets() / a.name / "books.parquet").exists():
+    if not (paths.datasets() / a.name / "books.parquet").exists():
         sys.exit(f"no dataset '{a.name}' (see: atlas list)")
-    else:
-        paths.set_current(a.name)
+    paths.set_current(a.name)
     print(f"current dataset: {a.name}")
 
 
@@ -162,9 +152,6 @@ def main(argv=None):
     p.add_argument("--dataset")
     net(p)
     p.set_defaults(fn=cmd_serve)
-    p = sub.add_parser("demo", help="open the bundled sample map")
-    net(p)
-    p.set_defaults(fn=cmd_demo)
     sub.add_parser("list", help="list imported datasets").set_defaults(fn=cmd_list)
     p = sub.add_parser("use", help="make a dataset current")
     p.add_argument("name")

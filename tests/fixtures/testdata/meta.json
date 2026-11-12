@@ -1,0 +1,12 @@
+{
+ "name": "testdata",
+ "n": 199,
+ "source": "books.json",
+ "attribution": "",
+ "built": "2026-11-12 15:46",
+ "embedding_model": "BAAI/bge-small-en-v1.5",
+ "embedding_text": "title + tags + description without marketing fluff (textprep v1)",
+ "with_description": 199,
+ "with_rating": 199,
+ "description": "199 books from books.json \u00b7 mapped by description"
+}

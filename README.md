@@ -12,7 +12,7 @@ click a dot to open the book's page, or just ask *Atlas AI*: "books like Dracula
 fiction", "recommend me something from here". You and Atlas AI drive **one shared view**, so whatever it does
 happens on your screen, and it can see what you're looking at.
 
-![Atlas: the bundled Project Gutenberg sample, after asking "books like Dracula" — recommended picks are ringed and ranked on the map](docs/screenshot.png)
+![Atlas after asking "books like The Secret Garden" — recommended picks are ringed and ranked on the map](docs/screenshot.png)
 
 On a phone, Atlas opens straight on the map; the bottom tab bar switches to *Ask Atlas*:
 
@@ -32,13 +32,7 @@ On a phone, Atlas opens straight on the map; the bottom tab bar switches to *Ask
 
 ```sh
 pipx install --pip-args=--pre git+https://github.com/cedrichelewaut/atlas    # or: uv tool install --prerelease=allow git+https://github.com/cedrichelewaut/atlas
-atlas demo                                                                    # opens the bundled sample at http://127.0.0.1:8010
-```
-
-Then your own books:
-
-```sh
-atlas import goodreads_library_export.csv && atlas serve
+atlas import goodreads_library_export.csv && atlas serve                      # your books at http://127.0.0.1:8010
 ```
 
 One-line installer (checks for Python, installs with uv or pipx, tells you about Ollama):
@@ -49,7 +43,7 @@ Docker: `docker build -t atlas . && docker run -p 8010:8010 atlas`
 `--pre` is needed because Atlas depends on [FlexViz](https://flexviz.tech) `0.1.0b5`, which is a beta on PyPI.
 
 **What to expect:** the install pulls about **900 MB** of dependencies (UMAP/numba, SciPy, ONNX Runtime) and takes
-under a minute with uv. `atlas demo` needs nothing else. The first `atlas import` downloads the ~65 MB
+under a minute with uv. The first `atlas import` downloads the ~65 MB
 `bge-small-en-v1.5` embedding model into `~/.atlas/models/` (once; `FASTEMBED_CACHE_PATH` moves it). If port 8010 is
 taken, Atlas picks the next free port and says so.
 
@@ -86,7 +80,7 @@ back to the browser).
 ```
 src/atlas_books/   cli.py · build.py · paths.py · store.py · state.py · routes.py · tools.py
                  librarian.py · agent.py · rec.py · providers.py · security.py · textprep.py · web/
-tests/           pytest suite (conftest boots a live demo server with an isolated ATLAS_HOME)
+tests/           pytest suite (conftest serves the small fixture dataset tests/fixtures/testdata)
 docs/            ARCHITECTURE.md · AGENT_GUIDE.md · ROADMAP.md · adr/
 ```
 
@@ -122,8 +116,8 @@ python3.12 -m venv .venv && . .venv/bin/activate
 pip install --pre -e ".[dev]"              # --pre: FlexViz is a beta on PyPI
 git config core.hooksPath .githooks        # pre-commit hook: ruff check + format --check
 ruff check && ruff format                  # lint + format
-pytest -q                                  # boots a live demo server on a free port; CI adds 3.10/3.11/3.13 + e2e
-atlas demo                                 # manual smoke test
+pytest -q                                  # serves the fixture dataset on a free port; CI adds 3.10/3.11/3.13 + e2e
+atlas serve                                # manual smoke test on your current dataset
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow and [AGENTS.md](AGENTS.md) for the conventions (also loaded
@@ -132,8 +126,6 @@ automatically by Vibe and most coding agents).
 ## Data, licence and attribution
 
 - Code: **MIT** (see `LICENSE`). FlexViz is Apache-2.0 and installed from PyPI, not vendored.
-- The bundled sample is 2,920 public-domain novels from the **Project Gutenberg** catalog (summaries, subjects,
-  download counts). It has no ratings, so "top rated" falls back to most downloaded.
 - **No Goodreads data ships with Atlas.** The prototype was built on the UCSD Goodreads research dataset, which is
   licensed for academic, non-commercial use; nothing from it is in this repo. Bring your own export instead.
 - Full notices: [`NOTICE.md`](NOTICE.md). Docs index: [`docs/README.md`](docs/README.md) — architecture, agent guide,

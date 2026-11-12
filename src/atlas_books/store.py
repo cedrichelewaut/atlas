@@ -8,7 +8,7 @@ from . import paths
 
 DATA = str(paths.data_dir())
 if not os.path.exists(f"{DATA}/books.parquet"):
-    raise SystemExit(f"No dataset at {DATA}. Run `atlas demo` or `atlas import <file>` first.")
+    raise SystemExit(f"No dataset at {DATA}. Run `atlas import <file>` first, then `atlas serve`.")
 META = json.load(open(f"{DATA}/meta.json")) if os.path.exists(f"{DATA}/meta.json") else {}
 EXTRA = f"{DATA}/extra.parquet"
 

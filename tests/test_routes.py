@@ -45,13 +45,13 @@ def test_every_get_route_answers(server):
         expect = 302 if route.startswith("/go/") else 200
         assert st == expect, (route, st, body[:300])
         if route == "/go/book/{i}":
-            assert h["location"].startswith("https://www.gutenberg.org/")
+            assert h["location"].startswith("https://")
 
 
 def test_parse_endpoint(server):
-    st, _, body = request(server, "/api/librarian/parse?q=" + urllib.parse.quote("books like Dracula after 1890"))
+    st, _, body = request(server, "/api/librarian/parse?q=" + urllib.parse.quote("books like Dracula after 1990"))
     d = json.loads(body)
-    assert st == 200 and d["recognised"] and d["like"] == "Dracula" and d["filters"]["year"][0] == 1891
+    assert st == 200 and d["recognised"] and d["like"] == "Dracula" and d["filters"]["year"][0] == 1991
 
 
 def test_events_stream_says_hello(server):
@@ -72,14 +72,14 @@ def test_events_stream_says_hello(server):
 def test_page_examples_come_from_the_dataset(server):
     body = request(server, "/")[2].decode()
     assert "{{" not in body and "Martian" not in body and "Connect Goodreads" not in body
-    assert "zoom to science fiction" in body.lower()  # the Gutenberg sample has no ratings: no "4★+" example
+    assert "4★+" in body  # the fixture dataset has ratings, so a rating-filter example is offered
     cfg = json.loads(request(server, "/api/config")[2])
-    assert cfg["has_rating"] is False
+    assert cfg["has_rating"] is True
 
 
 def test_system_prompt_names_the_dataset():
     from atlas_books import agent
 
-    p = agent.system_prompt("2,920 public-domain novels from Project Gutenberg", has_rating=False)
-    assert "Project Gutenberg" in p and "Goodreads" not in p and "has no ratings" in p
+    p = agent.system_prompt("199 books from books.json", has_rating=False)
+    assert "books.json" in p and "Goodreads" not in p and "has no ratings" in p
     assert "482k" not in agent.SYSTEM_TEMPLATE

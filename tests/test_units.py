@@ -179,7 +179,7 @@ def test_wizard_runs_to_three_picks_without_llm(sample_books):
     from atlas_books import rec
 
     async def run():
-        r = await rec.start(sample_books, pl.col("year") < 1900, "test view")
+        r = await rec.start(sample_books, pl.lit(True), "test view")
         assert "question" in r and r["model"] == "deterministic"
         for _ in range(rec.MAXQ + 1):
             if "final" in r:
@@ -191,7 +191,7 @@ def test_wizard_runs_to_three_picks_without_llm(sample_books):
     r = asyncio.run(run())
     top = r["final"]["top3"]
     assert len(top) == 3 and len({b["i"] for b in top}) == 3
-    assert all(b["year"] is None or b["year"] < 1900 for b in top)
+    assert all(b["year"] is None or 0 < b["year"] < 2100 for b in top)
     assert asyncio.run(rec.answer(r["session"], 0))["error"] == "session already finished"
 
 

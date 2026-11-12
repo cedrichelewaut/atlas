@@ -1,14 +1,6 @@
 # Notices and attribution
 
-## Bundled sample data (`src/atlas_books/sample/`)
-The sample (2,920 English-language novels) comes from the **Project Gutenberg catalog**
-(<https://www.gutenberg.org/ebooks/offline_catalogs.html>): title, author, subjects/bookshelves, catalog summary, download
-count and ebook URL. The books are in the public domain in the USA. Project Gutenberg is a registered trademark of the
-Project Gutenberg Literary Archive Foundation; this project is not affiliated with or endorsed by it. The `downloads` column
-(used as `ratings_count`) is Gutenberg's download count; there are no ratings. `sample/built/` holds the map built from
-that CSV with `atlas import` (bge-small-en-v1.5 embeddings quantised to int8, UMAP coordinates).
-
-**No Goodreads data is included.** Atlas started as a prototype on the UCSD Goodreads dataset, which is licensed for
+**No book data ships with Atlas** — no bundled sample, and no Goodreads data. Atlas started as a prototype on the UCSD Goodreads dataset, which is licensed for
 academic, non-commercial use only; none of it (and nothing derived from it) is in this repository. The Goodreads importer
 reads *your own* library export. `tests/fixtures/` contains synthetic files (public-domain titles, made-up ids and ratings).
 
