@@ -1,5 +1,10 @@
 # Atlas
 
+[![CI](https://github.com/cedrichelewaut/atlas/actions/workflows/ci.yml/badge.svg)](https://github.com/cedrichelewaut/atlas/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/atlas-books)](https://pypi.org/project/atlas-books/)
+[![Python](https://img.shields.io/pypi/pyversions/atlas-books)](https://pypi.org/project/atlas-books/)
+[![License: MIT](https://img.shields.io/github/license/cedrichelewaut/atlas)](LICENSE)
+
 **A map of your books, arranged by what they are about, that you explore together with an AI librarian.**
 
 Every book is a dot; books with similar descriptions sit close together. Zoom, filter by year, rating, popularity or length,
@@ -8,6 +13,16 @@ fiction", "recommend me something from here". You and Atlas AI drive **one share
 happens on your screen, and it can see what you're looking at.
 
 ![Atlas: the bundled Project Gutenberg sample, after asking "books like Dracula"](docs/screenshot.png)
+
+## Contents
+
+- [Quickstart](#quickstart)
+- [Importing your books](#importing-your-books)
+- [Atlas AI (optional LLM)](#atlas-ai-optional-llm)
+- [Architecture](#architecture)
+- [Development](#development)
+- [Data, licence and attribution](#data-licence-and-attribution)
+- [Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md) · [Docs](docs/README.md)
 
 ## Quickstart
 
@@ -65,6 +80,13 @@ back to the browser).
 ## Architecture
 
 ```
+src/atlas_books/   cli.py · build.py · paths.py · store.py · state.py · routes.py · tools.py
+                 librarian.py · agent.py · rec.py · providers.py · security.py · textprep.py · web/
+tests/           pytest suite (conftest boots a live demo server with an isolated ATLAS_HOME)
+docs/            ARCHITECTURE.md · AGENT_GUIDE.md · ROADMAP.md · adr/
+```
+
+```
 browser ── FlexViz dashboard (iframe) ──┐      one shared FlexViz state (zoom + selections)
    │  WebGL dot layer, sliders, panels   │◄──── SSE "apply" patches ───┐
    └── POST /api/browser_state ──────────┘                             │
@@ -86,6 +108,23 @@ yellow ring and a ranked tag. Recommendation highlights stay until the next reco
 is framed so all picks are visible, the agent sees them in `view_state` (`highlights`, `summary.recommended`), and
 clicking a ringed book still opens its link.
 
+Full picture (Mermaid diagrams, chat-turn flow, import pipeline, on-disk layout, module map):
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). The decisions behind the design: [`docs/adr/`](docs/adr/).
+
+## Development
+
+```sh
+python3.12 -m venv .venv && . .venv/bin/activate
+pip install --pre -e ".[dev]"              # --pre: FlexViz is a beta on PyPI
+git config core.hooksPath .githooks        # pre-commit hook: ruff check + format --check
+ruff check && ruff format                  # lint + format
+pytest -q                                  # boots a live demo server on a free port; CI adds 3.10/3.11/3.13 + e2e
+atlas demo                                 # manual smoke test
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow and [AGENTS.md](AGENTS.md) for the conventions (also loaded
+automatically by Vibe and most coding agents).
+
 ## Data, licence and attribution
 
 - Code: **MIT** (see `LICENSE`). FlexViz is Apache-2.0 and installed from PyPI, not vendored.
@@ -93,4 +132,5 @@ clicking a ringed book still opens its link.
   download counts). It has no ratings, so "top rated" falls back to most downloaded.
 - **No Goodreads data ships with Atlas.** The prototype was built on the UCSD Goodreads research dataset, which is
   licensed for academic, non-commercial use; nothing from it is in this repo. Bring your own export instead.
-- Full notices: [`NOTICE.md`](NOTICE.md). Ideas for what's next: [`docs/ROADMAP.md`](docs/ROADMAP.md).
+- Full notices: [`NOTICE.md`](NOTICE.md). Docs index: [`docs/README.md`](docs/README.md) — architecture, agent guide,
+  roadmap, ADRs.

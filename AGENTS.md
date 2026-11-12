@@ -22,7 +22,8 @@ src/atlas_books/
 ├── textprep.py    strips marketing fluff / review quotes / library shelves from descriptions before embedding
 └── web/           single-page UI (index.html + Inter font); talks to /api/* and embeds the FlexViz iframe
 tests/             pytest; conftest.py boots a live `atlas demo` server on a free port with an isolated ATLAS_HOME
-docs/              ROADMAP.md, AGENT_GUIDE.md (the prompt given to the LLM), screenshot.png
+docs/              ARCHITECTURE.md, AGENT_GUIDE.md (the prompt given to the LLM), ROADMAP.md, adr/, screenshot.png
+.githooks/         committed pre-commit hook (ruff); enable with `git config core.hooksPath .githooks`
 ```
 
 ## Rules
@@ -38,4 +39,5 @@ docs/              ROADMAP.md, AGENT_GUIDE.md (the prompt given to the LLM), scr
 - User-facing changes update `README.md`; design decisions and trade-offs go in `docs/` (ADRs in `docs/adr/` are
   welcome); the LLM-facing prompt lives in `docs/AGENT_GUIDE.md`.
 - Never commit caches or local data: `__pycache__/`, `.pytest_cache/`, `.ruff_cache/`, `venv/`, `~/.atlas` contents.
-- Commits: short imperative subject line, no emoji.
+- Commits: short imperative subject line, no emoji. The committed pre-commit hook (`.githooks/`) runs
+  `ruff check` + `ruff format --check` on every commit once enabled (`git config core.hooksPath .githooks`).

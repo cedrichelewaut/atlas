@@ -1,0 +1,14 @@
+#!/bin/sh
+# Pre-commit gate: fast lint/format checks on every commit.
+# The full test suite (pytest, live demo server) runs in CI — .github/workflows/ci.yml;
+# run `pytest -q` locally before pushing.
+RUFF="$(command -v ruff 2>/dev/null || true)"
+[ -n "$RUFF" ] || { [ -x .venv/bin/ruff ] && RUFF=.venv/bin/ruff; }
+[ -n "$RUFF" ] || { [ -x venv/bin/ruff ] && RUFF=venv/bin/ruff; }
+if [ -z "$RUFF" ]; then
+  echo "pre-commit: ruff not found (pip install --pre -e '.[dev]'); skipping lint"
+  exit 0
+fi
+"$RUFF" check . || exit 1
+"$RUFF" format --check . || exit 1
+echo "pre-commit: ruff check + format OK"
