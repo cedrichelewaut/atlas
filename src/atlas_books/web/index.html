@@ -1,222 +1,360 @@
 <!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
 <title>Atlas</title><link rel=icon type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cg%20shape-rendering%3D%22crispEdges%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20fill%3D%22%23FAFAF7%22%2F%3E%3Crect%20x%3D%221%22%20y%3D%221%22%20width%3D%2230%22%20height%3D%2230%22%20fill%3D%22none%22%20stroke%3D%22%239A2400%22%20stroke-width%3D%222%22%2F%3E%3Crect%20x%3D%221%22%20y%3D%221%22%20width%3D%227%22%20height%3D%2230%22%20fill%3D%22%239A2400%22%2F%3E%3C%2Fg%3E%3Crect%20x%3D%2213%22%20y%3D%2210%22%20width%3D%224%22%20height%3D%226%22%20rx%3D%222%22%20fill%3D%22%239A2400%22%2F%3E%3Crect%20x%3D%2221%22%20y%3D%2210%22%20width%3D%224%22%20height%3D%226%22%20rx%3D%222%22%20fill%3D%22%239A2400%22%2F%3E%3C%2Fsvg%3E">
+<meta name=theme-color content="#FAF7F2">
 <style>
 @font-face{font-family:Inter;src:url(/assets/InterVariable.woff2) format('woff2');font-weight:100 900;font-display:swap}
-:root{--bg:#f5f6fa;--surface:#ffffff;--surface-2:#f4f5f9;--surface-3:#eceef4;--border:rgba(15,23,42,.08);--border-2:rgba(15,23,42,.14);
- --text:#141824;--text-2:#4a5162;--muted:#7a8193;--accent:#4f5bd5;--accent-2:#3f4ac0;--accent-bg:rgba(79,91,213,.08);--accent-border:rgba(79,91,213,.32);
- --ok:#10b981;--warn:#d97706;--err:#dc2626;--r:10px;--r-sm:7px;--font:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--side:clamp(380px,31vw,460px)}
-*{box-sizing:border-box}html{color-scheme:light}html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:13px/1.45 var(--font);font-feature-settings:"cv11","ss01";-webkit-font-smoothing:antialiased}
-button,input{font:inherit;color:inherit}
-::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:#d5d8e1;border-radius:9px;border:2px solid var(--surface)}::-webkit-scrollbar-track{background:transparent}
-#app{display:grid;grid-template-rows:56px 1fr;height:100%}
-#stage{grid-template-rows:auto auto minmax(64px,1fr)!important}
-#mapwrap{height:calc(100vh - 56px - 126px - 72px)}
-#madewith{display:flex;align-items:center;gap:14px;padding:14px 18px;border-top:1px solid var(--border);background:var(--bg);color:var(--text)}
-#madewith .mw-mark{flex:none;width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:var(--surface);border:1px solid var(--border);font-weight:700;font-size:15px;color:var(--text)}
-#madewith .mw-t{font-size:14px;font-weight:600;line-height:1.3}#madewith .mw-s{font-size:12.5px;color:var(--muted);line-height:1.35;margin-top:1px}
-#madewith a{color:var(--accent-2);text-decoration:none;font-weight:600}#madewith a:hover{text-decoration:underline}
-#madewith .mw-go{margin-left:auto;flex:none;font-size:13px;padding:6px 12px;border:1px solid var(--border-2);border-radius:999px;background:var(--surface);color:var(--text);font-weight:500}#madewith .mw-go:hover{border-color:var(--accent-2);color:var(--accent-2);text-decoration:none}
-header{display:flex;align-items:center;gap:16px;padding:0 16px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.92);backdrop-filter:blur(8px);box-shadow:0 1px 0 rgba(15,23,42,.04)}
-.brand{display:flex;align-items:center;gap:10px;min-width:220px}.logo{width:30px;height:30px;display:grid;place-items:center;flex:none}.amark{display:block}
-.brand h1{font-size:15px;font-weight:650;margin:0;letter-spacing:-.01em}.brand small{display:block;color:var(--muted);font-size:11px;margin-top:-1px}
-.search{position:relative;flex:1;max-width:460px}.search input{width:100%;height:36px;padding:0 12px 0 34px;background:var(--surface);border:1px solid var(--border-2);border-radius:9px;outline:none;transition:border-color .15s,box-shadow .15s}
-.search input:focus{border-color:var(--accent-border);box-shadow:0 0 0 3px var(--accent-bg)}.search svg{position:absolute;left:11px;top:10px;opacity:.55}
-#ac{position:absolute;top:40px;left:0;right:0;background:var(--surface-2);border:1px solid var(--border-2);border-radius:10px;box-shadow:0 14px 40px rgba(15,23,42,.14);overflow:hidden;display:none;z-index:50}
-#ac div{padding:8px 12px;cursor:pointer;display:flex;justify-content:space-between;gap:10px}#ac div:hover,#ac div.on{background:var(--accent-bg)}#ac span{color:var(--muted);font-size:12px;white-space:nowrap}
-.hdr-right{margin-left:auto;display:flex;align-items:center;gap:8px}
-.pill{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-2);font-size:12px;white-space:nowrap}
-.dot{width:7px;height:7px;border-radius:50%;background:var(--muted)}.dot.live{background:var(--ok);box-shadow:0 0 0 3px rgba(16,185,129,.15)}
-.btn{height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--border-2);background:var(--surface);cursor:pointer;transition:background .15s,border-color .15s}.btn:hover{background:var(--surface-3)}
-main{display:grid;grid-template-columns:1fr var(--side);min-height:0}
-#stage{min-width:0;min-height:0;background:var(--bg);display:grid;grid-template-rows:1fr auto}#mapwrap{position:relative;min-height:0}#fv{position:absolute;inset:0;width:100%;height:100%;border:0;opacity:0;transition:opacity .35s}#fv.ready{opacity:1}
-.skel{position:absolute;inset:12px;display:grid;grid-template-columns:2fr 1fr;grid-template-rows:2fr 1fr;gap:10px;transition:opacity .3s}.skel.gone{opacity:0;pointer-events:none}
-.skel div,.sk{background:linear-gradient(90deg,var(--surface) 0%,var(--surface-2) 50%,var(--surface) 100%);background-size:200% 100%;animation:sh 1.3s infinite linear;border-radius:var(--r);border:1px solid var(--border)}
-.skel div:nth-child(3){grid-column:1/3}@keyframes sh{to{background-position:-200% 0}}
-aside{min-width:0;overflow:hidden;display:grid;grid-template-rows:1fr;border-left:1px solid var(--border);background:var(--surface);box-shadow:-1px 0 0 rgba(15,23,42,.02);min-height:0}
-.sec{display:flex;flex-direction:column;min-height:0;min-width:0}.sec+.sec{border-top:1px solid var(--border)}
-.sec-h{display:flex;align-items:center;gap:8px;padding:12px 14px 8px}.sec-h h2{font-size:12px;font-weight:600;margin:0;color:var(--text);letter-spacing:.01em}.sec-h .sub{color:var(--muted);font-size:12px}
-.count{font-variant-numeric:tabular-nums;color:var(--accent-2);font-weight:600}
-#ctx{padding:0 14px 8px;display:flex;flex-wrap:wrap;gap:6px}.chip{display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:3px 9px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-2);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.chip.acc{background:var(--accent-bg);border-color:var(--accent-border);color:var(--accent-2)}.chip.focus{background:#fff7e6;border-color:#f6c76b;color:#9a5b00}
-#tw{flex:1;overflow:auto;min-height:0;padding:0 6px 8px}
-table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;font-size:12.5px}th{position:sticky;top:0;z-index:1;background:var(--surface);text-align:left;font-weight:500;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:6px 8px;border-bottom:1px solid var(--border)}
-td{padding:7px 8px;border-bottom:1px solid var(--border);vertical-align:middle}td.num{text-align:right;font-variant-numeric:tabular-nums;color:var(--text-2);white-space:nowrap}
-td .t{color:var(--text);font-weight:500;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}td .a{color:var(--muted);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-tbody tr{cursor:pointer;transition:background .12s}tbody tr:hover td{background:var(--surface-2)}tr.sel td{background:#fff8e8}tr.sel td:first-child{box-shadow:inset 3px 0 0 #f59e0b}
-.star{color:#f59e0b}.rk{color:var(--muted);font-size:11px;width:22px}
-.empty{padding:28px 18px;text-align:center;color:var(--muted)}.empty b{display:block;color:var(--text-2);font-weight:600;margin-bottom:4px}
-.sk{height:30px;margin:6px 8px}
-#log{flex:1;overflow:auto;padding:4px 14px 10px;min-height:0;scroll-behavior:smooth}
-.msg{display:flex;flex-direction:column;margin:10px 0;max-width:92%;min-width:0}.msg.u{margin-left:auto;align-items:flex-end}
-.bub{overflow-wrap:anywhere;min-width:0;padding:9px 12px;border-radius:12px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);line-height:1.5}.msg.u .bub{background:var(--accent);border-color:transparent;color:#fff;font-weight:500;border-bottom-right-radius:4px}
-.msg.b .bub{border-bottom-left-radius:4px}.bub ul{margin:4px 0;padding-left:18px}.bub li{margin:2px 0}.bub p{margin:0 0 6px}.bub p:last-child{margin:0}
-.tools{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 6px}.tc{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 8px;border-radius:6px;background:#ecfdf5;border:1px solid #a7f3d0;color:#047857}
-.tc.err{background:#fef2f2;border-color:#fecaca;color:#b91c1c}.meta{color:var(--muted);font-size:11px;margin-top:4px}
-.typing{display:inline-flex;gap:4px;align-items:center}.typing i{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:bl 1.2s infinite}.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
-@keyframes bl{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-2px)}}
-.welcome{margin:8px 0 4px;padding:14px;border:1px dashed var(--border-2);border-radius:var(--r);color:var(--text-2)}.welcome b{color:var(--text)}
-#sugg{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:6px;padding:0 14px 8px;scrollbar-width:none}#sugg::-webkit-scrollbar{display:none}#sugg button{white-space:nowrap}#sugg button{border:1px solid var(--border-2);background:var(--surface-2);color:var(--text-2);border-radius:999px;padding:5px 11px;font-size:12px;cursor:pointer;transition:all .15s}
-#sugg button:hover{border-color:var(--accent-border);color:var(--accent-2);background:var(--accent-bg)}
-#f{display:flex;gap:8px;padding:10px 14px 14px}#f input{flex:1;height:38px;padding:0 12px;background:var(--surface);border:1px solid var(--border-2);border-radius:10px;outline:none}#f input:focus{border-color:var(--accent-border);box-shadow:0 0 0 3px var(--accent-bg)}
-#f button{height:38px;width:38px;border-radius:10px;border:0;background:var(--accent);color:#fff;cursor:pointer;display:grid;place-items:center}#f button:disabled{opacity:.45;cursor:default}
-.recbar{padding:0 14px 6px}.recbtn{width:100%;height:38px;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:10px;border:1px solid var(--accent-border);background:var(--accent-bg);color:var(--accent-2);font-weight:600;font-size:13px;cursor:pointer;transition:all .15s}
-.recbtn:hover:not(:disabled){background:var(--accent);color:#fff;border-color:var(--accent)}.recbtn:disabled{opacity:.5;cursor:default}.recbtn small{font-weight:500;opacity:.75}
-.wiz{width:100%;max-width:100%}.wiz .bub{background:var(--surface);border-color:var(--accent-border)}.wq{font-weight:600;color:var(--text);margin-bottom:8px}.wstep{font-size:11px;color:var(--accent-2);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
-.opts{display:flex;flex-direction:column;gap:6px}.opt{display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:left;padding:8px 11px;border-radius:9px;border:1px solid var(--border-2);background:var(--surface-2);color:var(--text);cursor:pointer;font-size:12.5px;transition:all .12s}
-.opt:hover:not(:disabled){border-color:var(--accent);background:var(--accent-bg)}.opt:disabled{cursor:default;opacity:.55}.opt.on{opacity:1;border-color:var(--accent);background:var(--accent);color:#fff}.opt span{color:inherit;opacity:.65;font-size:11px;white-space:nowrap}
-.wfoot{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:11px;color:var(--muted)}.wfoot a{color:var(--muted);cursor:pointer;text-decoration:underline}
-.top3{display:flex;flex-direction:column;gap:8px;margin-top:6px}.pick{display:grid;grid-template-columns:24px 1fr;gap:8px;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2)}
-.pick .n{width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:12px;display:grid;place-items:center}.pick:first-child .n{background:#d97706}
-.pick .tt{display:inline;font-weight:600;color:var(--text);cursor:pointer}.pick .tt:hover{color:var(--accent-2);text-decoration:underline}.pick .mt{font-size:11.5px;color:var(--muted);margin:1px 0 5px}.pick p{margin:0 0 4px;font-size:12.5px}.pick .why{color:var(--text-2);font-size:12px}.pick .why b{color:var(--accent-2);font-weight:600}
-.recbar{display:none}
-#filters{padding:10px 18px 14px;border-top:1px solid var(--border);background:var(--surface)}
-#filters .fh{display:flex;align-items:baseline;gap:10px;margin-bottom:8px}#filters .fh b{font-size:12px;font-weight:600}#filters .fh span{color:var(--muted);font-size:12px}
-#filters a{color:var(--accent-2);cursor:pointer;font-size:12px}#filters a:hover{text-decoration:underline}#filters .fh a{margin-left:auto}
-.sliders{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 28px}
-.sl .slh{display:flex;align-items:baseline;gap:8px;margin-bottom:4px;font-size:12px}.sl .slh .nm{font-weight:600;color:var(--text)}.sl .slh .v{color:var(--accent-2);font-variant-numeric:tabular-nums;font-weight:600}
-.sl .slh a{margin-left:auto;visibility:hidden;font-size:11.5px}.sl.on .slh a{visibility:visible}.sl .hint{color:var(--muted);font-size:10.5px;margin-top:2px;min-height:13px}
-.rng{position:relative;height:22px}.rng .track{position:absolute;left:0;right:0;top:9px;height:4px;border-radius:4px;background:var(--surface-3)}
-.rng .fill{position:absolute;top:0;bottom:0;border-radius:4px;background:#c7cbef}.sl.on .rng .fill{background:var(--accent)}
-.rng input{position:absolute;left:-2px;right:-2px;width:calc(100% + 4px);top:0;height:22px;margin:0;background:none;pointer-events:none;-webkit-appearance:none;appearance:none}
-.rng input::-webkit-slider-thumb{-webkit-appearance:none;pointer-events:auto;width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid var(--accent);box-shadow:0 1px 3px rgba(15,23,42,.2);cursor:grab}
-.rng input::-moz-range-thumb{pointer-events:auto;width:13px;height:13px;border-radius:50%;background:#fff;border:2px solid var(--accent);cursor:grab}
-.rng input:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px var(--accent-bg)}.rng input::-webkit-slider-runnable-track{background:none}
-aside{position:relative}
-#fab{position:absolute;right:18px;bottom:18px;width:58px;height:58px;border-radius:50%;border:1px solid var(--border-2);padding:0;cursor:pointer;background:#fff;display:grid;place-items:center;box-shadow:0 8px 22px rgba(0,0,0,.14),0 2px 6px rgba(0,0,0,.06);transition:transform .15s,box-shadow .15s;z-index:20}
-#fab:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(0,0,0,.22)}#fab svg{display:block}#fab .tip{position:absolute;right:66px;top:50%;transform:translateY(-50%);white-space:nowrap;background:#141824;color:#fff;font-size:12px;padding:5px 9px;border-radius:7px;opacity:0;pointer-events:none;transition:opacity .15s}#fab:hover .tip{opacity:1}
-#chat{position:absolute;left:0;right:0;bottom:0;height:min(640px,72%);display:flex;flex-direction:column;background:var(--surface);border-top:1px solid var(--border-2);box-shadow:0 -12px 32px rgba(15,23,42,.12);border-radius:16px 16px 0 0;transform:translateY(102%);transition:transform .25s ease;z-index:30}
-#chat.open{transform:none}#chat .ch{display:flex;align-items:center;gap:10px;padding:12px 14px 8px}#chat .ch b{font-size:13.5px}#chat .ch .x{margin-left:8px;width:28px;height:28px;border-radius:8px;border:1px solid var(--border-2);background:var(--surface);cursor:pointer;display:grid;place-items:center}
-.msg.sys .bub{background:#f8fafc;border-style:dashed;color:var(--text-2);font-size:12.5px}
-.model{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);margin-left:auto}
+/* Warm "paper and ink" palette built around the logo's rust red (#9A2400). Text colours all pass WCAG AA on --surface and --bg. */
+:root{--bg:#F6F2EB;--surface:#FFFFFF;--surface-2:#FBF8F3;--surface-3:#F1EBE1;--border:rgba(60,40,20,.12);--border-2:rgba(60,40,20,.22);
+ --text:#221C17;--text-2:#4B4139;--muted:#6B6158;--accent:#9A2400;--accent-2:#7C1D00;--accent-bg:rgba(154,36,0,.07);--accent-border:rgba(154,36,0,.38);
+ --gold:#B7791F;--gold-bg:#FDF4E3;--ok:#2F7D4F;--ok-bg:#EAF5EE;--err:#B42318;--err-bg:#FDECEA;
+ --r:14px;--r-sm:10px;--tap:48px;--font:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--side:clamp(360px,32vw,470px);
+ --shadow:0 1px 2px rgba(60,40,20,.06),0 6px 20px rgba(60,40,20,.07);--hdr:68px;--bnav:0px}
+*{box-sizing:border-box}html{color-scheme:light;-webkit-text-size-adjust:100%}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:16px/1.5 var(--font);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:8px}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:#d8cfc3;border-radius:10px;border:2px solid var(--surface)}::-webkit-scrollbar-track{background:transparent}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#app{display:grid;grid-template-rows:var(--hdr) minmax(0,1fr);height:100vh;height:100dvh}
 
-a.bklink{display:inline-flex;align-items:center;gap:2px;height:20px;padding:0 5px;border-radius:6px;border:1px solid #e3d6bf;background:#f8f3e8;color:#5b3f1f;text-decoration:none;font:600 11px/1 Georgia,serif;flex:none;transition:background .15s,border-color .15s,transform .15s}
-a.bklink b{font-weight:700;font-size:12px;margin-top:-2px}a.bklink svg{opacity:.75}a.bklink:hover{background:#efe3c9;border-color:#d5bf96;transform:translateY(-1px)}a.bklink.inl{height:17px;padding:0 4px;margin-left:4px;vertical-align:1px}
-/* ---- right panel: tabs ---- */
-aside{display:flex!important;flex-direction:column}
-.tabs{display:flex;gap:2px;padding:6px 10px 0;border-bottom:1px solid var(--border);flex:none}
-.tab{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;height:40px;border:0;background:none;color:var(--text-2);font:inherit;font-size:12.5px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;padding:0 6px;transition:color .15s,border-color .15s}
-.tab:hover{color:var(--text)}.tab.on{color:var(--accent-2);border-bottom-color:var(--accent);font-weight:600}.tab svg{flex:none}
-.ivbar{display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:9px 14px 7px;font-size:12px;color:var(--muted);flex:none;border-bottom:1px solid var(--border)}.ivbar .ivn b{color:var(--text);font-size:12.5px}
-.ivbar #ctx{padding:0;display:contents}
+/* ---------- header ---------- */
+header{display:flex;align-items:center;gap:20px;padding:0 20px;border-bottom:1px solid var(--border);background:var(--surface);min-width:0}
+.brand{display:flex;align-items:center;gap:12px;min-width:0;flex:0 1 auto}.logo{width:40px;height:40px;display:grid;place-items:center;flex:none}.amark{display:block}
+.brand h1{font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em;line-height:1.1}.brand small{display:block;color:var(--muted);font-size:13.5px;line-height:1.3;max-width:340px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.search{position:relative;flex:1;max-width:560px;min-width:0}
+.search input{width:100%;height:var(--tap);padding:0 16px 0 46px;background:var(--surface-2);border:2px solid var(--border-2);border-radius:999px;outline:none;font-size:17px;transition:border-color .15s,box-shadow .15s}
+.search input::placeholder{color:var(--muted)}.search input:focus{border-color:var(--accent);background:var(--surface);box-shadow:0 0 0 4px var(--accent-bg)}
+.search svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+#ac{position:absolute;top:calc(var(--tap) + 6px);left:0;right:0;background:var(--surface);border:1px solid var(--border-2);border-radius:var(--r);box-shadow:0 18px 44px rgba(60,40,20,.18);overflow:hidden;display:none;z-index:60}
+#ac div{min-height:56px;padding:9px 16px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;gap:1px;border-bottom:1px solid var(--border)}#ac div:last-child{border-bottom:0}
+#ac div:hover,#ac div.on{background:var(--accent-bg)}#ac b{font-weight:600;font-size:16px}#ac span{color:var(--muted);font-size:14px}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:10px;flex:none}
+.pill{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 12px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-2);font-size:14px;white-space:nowrap}
+#sync{display:none}#sync.bad{display:inline-flex;background:var(--gold-bg);border-color:#f0d6a8;color:#7a4a00}#who{display:none}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--gold)}.dot.live{background:var(--ok)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:999px;border:2px solid var(--border-2);background:var(--surface);color:var(--text);font-weight:600;font-size:16px;white-space:nowrap;transition:background .15s,border-color .15s,color .15s}
+.btn:hover{border-color:var(--accent);color:var(--accent)}.btn svg{flex:none}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}.btn.pri:hover{background:var(--accent-2);border-color:var(--accent-2);color:#fff}
+.btn:disabled{opacity:.5;cursor:default}
+
+/* ---------- layout ---------- */
+main{display:grid;grid-template-columns:minmax(0,1fr) var(--side);min-height:0;position:relative}
+#stage{min-width:0;min-height:0;display:flex;flex-direction:column;padding:16px 16px 0;gap:14px}
+#mapcard{flex:1;min-height:260px;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+#maphead{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+#maphead .mh-t{font-size:15px;color:var(--text-2);min-width:0;flex:1}#maphead .mh-t b{color:var(--text);font-size:17px;margin-right:6px}
+.mcount{font-size:15px;color:var(--text-2);white-space:nowrap}.mcount b{color:var(--accent);font-variant-numeric:tabular-nums}
+#topicbar{flex-basis:100%;display:flex;align-items:center;gap:10px;min-width:0}#topicbar[hidden]{display:none}
+#topicbar .tl{font-size:14.5px;color:var(--muted);white-space:nowrap;font-weight:600}
+.tchips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;min-width:0;flex:1;padding:2px 24px 2px 0;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}.tchips::-webkit-scrollbar{display:none}
+.tchips button{flex:none;min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--border-2);background:var(--surface);color:var(--text-2);font-size:15px;font-weight:500;white-space:nowrap;transition:all .15s}
+.tchips button:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
+#mapwrap{position:relative;flex:1;min-height:0}
+#fv{position:absolute;inset:0;width:100%;height:100%;border:0;opacity:0;transition:opacity .35s}#fv.ready{opacity:1}
+.skel{position:absolute;inset:14px;border-radius:var(--r-sm);transition:opacity .3s;display:grid;place-items:center;color:var(--muted);font-size:17px}.skel.gone{opacity:0;pointer-events:none}
+.skel,.sk{background:linear-gradient(90deg,var(--surface-2) 0%,var(--surface-3) 50%,var(--surface-2) 100%);background-size:200% 100%;animation:sh 1.4s infinite linear}@keyframes sh{to{background-position:-200% 0}}
+
+/* map controls (drawn over the map, outside the FlexViz iframe) */
+.mctl{position:absolute;z-index:5;display:flex;gap:8px}
+#zoomctl{top:12px;right:12px;flex-direction:column}
+.mbtn{min-width:var(--tap);height:var(--tap);padding:0 12px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;border:1px solid var(--border-2);background:rgba(255,255,255,.96);color:var(--text);font-size:15px;font-weight:600;box-shadow:0 2px 8px rgba(60,40,20,.12);transition:border-color .15s,color .15s,background .15s}
+.mbtn:hover{border-color:var(--accent);color:var(--accent)}.mbtn.big{font-size:26px;font-weight:500;line-height:1;padding:0}
+#modectl{top:12px;left:12px;background:rgba(255,255,255,.96);border:1px solid var(--border-2);border-radius:12px;padding:4px;gap:4px;box-shadow:0 2px 8px rgba(60,40,20,.12);align-items:center}
+#modectl .lbl{font-size:14px;color:var(--muted);padding:0 4px 0 8px}
+#modectl button{height:40px;padding:0 12px;border:0;border-radius:9px;background:none;color:var(--text-2);font-size:15px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+#modectl button[aria-pressed=true]{background:var(--accent);color:#fff}#modectl button:not([aria-pressed=true]):hover{background:var(--accent-bg);color:var(--accent)}
+#fbtn{display:none;top:12px;left:12px}#fbtn .badge{min-width:24px;height:24px;padding:0 7px;border-radius:999px;background:var(--accent);color:#fff;font-size:13px;display:none;place-items:center}#fbtn.on .badge{display:inline-grid}
+
+/* book card (opens when a dot is clicked or tapped) */
+#bookcard{position:absolute;z-index:8;left:50%;bottom:14px;transform:translateX(-50%);width:min(460px,calc(100% - 24px));max-height:calc(100% - 28px);overflow:auto;background:var(--surface);border:1px solid var(--border-2);border-radius:18px;box-shadow:0 18px 48px rgba(60,40,20,.25);padding:18px 18px 16px}
+#bookcard[hidden]{display:none}
+#bookcard .x{position:absolute;top:10px;right:10px;width:44px;height:44px;border-radius:50%;border:0;background:var(--surface-3);display:grid;place-items:center;color:var(--text-2)}#bookcard .x:hover{background:var(--accent-bg);color:var(--accent)}
+#bookcard h3{margin:0 48px 2px 0;font-size:20px;line-height:1.25}#bookcard .by{color:var(--text-2);font-size:16px;margin-bottom:10px}
+#bookcard .facts{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}#bookcard .facts span{padding:3px 11px;border-radius:999px;background:var(--surface-3);font-size:14px;color:var(--text-2)}
+#bookcard .facts .st{background:var(--gold-bg);color:#7a4a00}
+#bookcard p{margin:0 0 14px;color:var(--text-2);font-size:15.5px;line-height:1.55;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+#bookcard .acts{display:flex;flex-wrap:wrap;gap:10px}#bookcard .acts .btn{flex:1 1 180px}
+
+/* ---------- filters ---------- */
+#filters{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 18px 10px}
+#filters .fh{display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap}#filters .fh b{font-size:17px}#filters .fh span{color:var(--muted);font-size:15px;flex:1;min-width:0}
+.linkbtn{border:0;background:none;color:var(--accent);font-weight:600;font-size:15px;min-height:40px;padding:0 6px;text-decoration:underline;text-underline-offset:3px}.linkbtn:hover{color:var(--accent-2)}
+.btn.sm{min-height:40px;padding:0 14px;font-size:15px;border-width:1.5px}#freset:disabled{opacity:.45}#freset:disabled:hover{border-color:var(--border-2);color:var(--text)}
+.sliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px 32px}
+.sl[hidden]{display:none}
+.sl .slh{display:flex;align-items:baseline;gap:8px;font-size:15px;flex-wrap:nowrap;min-width:0}.sl .slh .nm{font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}.sl .slh .v{white-space:nowrap}.sl .slh .v{color:var(--muted);font-variant-numeric:tabular-nums}
+.sl.on .slh .v{color:var(--accent);font-weight:600}
+.sl .hint{display:flex;align-items:flex-start;gap:8px;color:var(--muted);font-size:13.5px;min-height:18px;line-height:1.3}.sl .hint span{flex:1}
+.sl .hint button{display:none;min-height:32px;margin-top:-6px;font-size:14px;flex:none}.sl.on .hint button{display:block}
+.rng{position:relative;height:44px}.rng .track{position:absolute;left:14px;right:14px;top:19px;height:6px;border-radius:6px;background:var(--surface-3)}
+.rng .fill{position:absolute;top:0;bottom:0;border-radius:6px;background:#d9c8b8}.sl.on .rng .fill{background:var(--accent)}
+.rng input{position:absolute;left:0;width:100%;top:0;height:44px;margin:0;background:none;pointer-events:none;-webkit-appearance:none;appearance:none}
+.rng input::-webkit-slider-thumb{-webkit-appearance:none;pointer-events:auto;width:28px;height:28px;border-radius:50%;background:#fff;border:3px solid var(--accent);box-shadow:0 1px 4px rgba(60,40,20,.3);cursor:grab}
+.rng input::-moz-range-thumb{pointer-events:auto;width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--accent);cursor:grab}
+.rng input:focus-visible{outline:none}.rng input:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 6px var(--accent-bg),0 0 0 3px var(--accent)}.rng input::-webkit-slider-runnable-track{background:none}
+#fdone,.sheet-h{display:none}
+#madewith{display:flex;align-items:center;gap:8px;margin-top:6px;padding-top:8px;border-top:1px solid var(--border);color:var(--muted);font-size:13.5px}
+#madewith .mw-mark{flex:none;width:22px;height:22px;border-radius:6px;display:grid;place-items:center;background:var(--surface-3);font-weight:700;font-size:12px;color:var(--text-2)}
+#madewith a{color:var(--text-2);font-weight:600}#madewith a:hover{color:var(--accent)}
+#stage::after{content:"";display:block;height:2px;flex:none}
+
+/* ---------- right panel ---------- */
+aside{min-width:0;min-height:0;overflow:hidden;display:flex;flex-direction:column;border-left:1px solid var(--border);background:var(--surface);position:relative}
+.tabs{display:flex;gap:4px;padding:8px 10px 0;border-bottom:1px solid var(--border);flex:none}
+.tab{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-height:52px;border:0;background:none;color:var(--text-2);font-size:16px;font-weight:600;border-bottom:3px solid transparent;margin-bottom:-1px;white-space:nowrap;padding:0 8px;transition:color .15s,border-color .15s}
+.tab:hover{color:var(--accent)}.tab.on{color:var(--accent);border-bottom-color:var(--accent)}.tab svg{flex:none}
+.ivbar{display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px;padding:10px 16px;font-size:15px;color:var(--text-2);flex:none;border-bottom:1px solid var(--border);background:var(--surface-2)}
+.ivbar .ivn b{font-size:15px}.ivbar #ctx{display:contents}
+.count{font-variant-numeric:tabular-nums;color:var(--accent);font-weight:700}
+.chip{display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:3px 11px;border-radius:999px;background:var(--surface);border:1px solid var(--border);color:var(--text-2);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip.acc{background:var(--accent-bg);border-color:var(--accent-border);color:var(--accent-2)}.chip.focus{background:var(--gold-bg);border-color:#f0d6a8;color:#7a4a00}
 .pane{display:none;flex-direction:column;min-height:0;min-width:0;flex:1}.pane.on{display:flex}
-.libbar{display:flex;align-items:center;gap:8px;margin:10px 14px 4px}.libbar .lbl{font-size:11.5px;color:var(--muted);font-weight:500}
-.msel{position:relative;display:inline-flex;align-items:center;min-width:0;flex:0 1 auto;color:var(--text-2)}.msel svg{position:absolute;right:9px;pointer-events:none;color:var(--muted)}
-.msel select{appearance:none;-webkit-appearance:none;height:30px;max-width:230px;padding:0 28px 0 11px;border:1px solid var(--border-2);border-radius:9px;background:var(--surface);color:var(--text);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;text-overflow:ellipsis;box-shadow:0 1px 2px rgba(15,23,42,.05);transition:border-color .15s,box-shadow .15s}
-.msel select:hover{border-color:var(--accent-border)}.msel select:focus{outline:none;border-color:var(--accent-border);box-shadow:0 0 0 3px var(--accent-bg)}
-.mstat{margin-left:auto;display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 9px;border:1px solid var(--border);border-radius:999px;background:var(--surface-2);font:inherit;font-size:11px;color:var(--muted);cursor:pointer;white-space:nowrap;max-width:46%;overflow:hidden;text-overflow:ellipsis}
-.mstat .mtx{overflow:hidden;text-overflow:ellipsis}.mstat .dot{flex:none;width:7px;height:7px;border-radius:50%;background:#cbd5e1}.mstat.ok{color:#047857;background:#ecfdf5;border-color:#a7f3d0}.mstat.ok .dot{background:#10b981}
-.mstat.err{color:#b91c1c;background:#fef2f2;border-color:#fecaca}.mstat.err .dot{background:#ef4444}.mstat.busy .dot{background:#f59e0b;animation:pulse 1s infinite}@keyframes pulse{50%{opacity:.35}}
-.cform{margin:6px 14px 8px;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);box-shadow:0 4px 16px rgba(15,23,42,.06);display:grid;gap:8px}.cform[hidden]{display:none}
-.cfh b{display:block;font-size:13px}.cfh span{font-size:11.5px;color:var(--muted)}
-.cform label{display:grid;gap:4px;font-size:11.5px;font-weight:600;color:var(--text-2)}.cform label i{font-weight:400;color:var(--muted)}
-.cform input{height:32px;padding:0 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--surface-2);font:inherit;font-size:12.5px;font-weight:400;color:var(--text)}.cform input:focus{outline:none;border-color:var(--accent-border);box-shadow:0 0 0 3px var(--accent-bg);background:var(--surface)}
-.crow{display:flex;justify-content:flex-end;gap:8px}.crow .btn{flex:none}#cmsg{font-size:11.5px;color:var(--muted);overflow-wrap:anywhere}#cmsg:empty{display:none}#cmsg.err{color:#b91c1c;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:6px 9px}.cnote{font-size:10.5px;color:var(--muted)}
-#toplist{flex:1;overflow:auto;padding:4px 10px 14px;min-height:0}.toph{padding:10px 14px 2px;font-size:11.5px;color:var(--muted);line-height:1.45}.toph span{border-bottom:1px dotted var(--border-2);cursor:help}
-.bk{display:grid;grid-template-columns:20px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:9px 11px;border:1px solid var(--border);border-radius:11px;margin:6px 0;background:var(--surface);cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s}
-.bk:hover{border-color:var(--accent-border);box-shadow:0 3px 12px rgba(15,23,42,.07);transform:translateY(-1px)}.bk.sel{border-color:#f6c76b;background:#fffaf0}
-.bk .rk{font-size:11px;color:var(--muted);text-align:center;font-variant-numeric:tabular-nums}.bk .t{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
-.bk .a{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}.bk .m{text-align:right;font-variant-numeric:tabular-nums}
-.bk .rt{display:flex;align-items:center;gap:6px;justify-content:flex-end;font-weight:600;font-size:12.5px;color:var(--text)}.bk .rt i{width:10px;height:10px;border-radius:50%;border:1px solid rgba(31,41,55,.35);display:inline-block}
-.bk .c{color:var(--muted);font-size:11px;margin-top:1px}.tempty{padding:30px 16px;text-align:center;color:var(--muted);font-size:12.5px}.tempty b{display:block;color:var(--text);margin-bottom:4px}
-#p-prof{padding:12px 12px 16px;gap:12px;overflow:auto}.card{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface);box-shadow:0 1px 2px rgba(15,23,42,.03)}
-.card h3{margin:0 0 4px;font-size:13.5px;color:var(--text);display:flex;align-items:center}.card p{margin:0 0 10px;color:var(--muted);font-size:12px;line-height:1.5}
-#ptext{width:100%;min-height:230px;resize:vertical;border:1px solid var(--border-2);border-radius:10px;padding:10px 12px;font:inherit;font-size:13px;line-height:1.55;color:var(--text);background:var(--surface-2);box-sizing:border-box}
-#ptext:focus{outline:none;border-color:var(--accent-border);box-shadow:0 0 0 3px var(--accent-bg);background:var(--surface)}
-.prow{display:flex;align-items:center;gap:10px;margin-top:10px}#pstat{font-size:12px;color:var(--muted)}#pstat.ok{color:#15803d}
-.btn.pri{white-space:nowrap;padding:0 14px;background:var(--accent);border-color:transparent;color:#fff;font-weight:600;height:32px}.btn.pri:hover{background:var(--accent-2)}
-.imp{display:flex;gap:12px;align-items:flex-start}.glogo{flex:none;width:40px;height:40px;border-radius:10px;background:#f4f1ea;display:grid;place-items:center;font-weight:700;color:#5a4634;font-family:Georgia,serif;font-size:22px;border:1px solid #e6dfcf}
 
-.btn-dis{opacity:.55;cursor:not-allowed}.btn-dis:hover{background:var(--surface)}
-#fab{display:none}aside.notlib #fab{display:grid}
-.msg.b .bub .mapchg{display:block;margin:-2px -4px 6px;padding:6px 8px;border-radius:8px;background:#ecfdf5;border:1px solid #bbf7d0;color:#14532d;font-size:12.5px}
-</style></head><body><div id=app>
+/* chat */
+#log{flex:1;overflow:auto;padding:6px 16px 10px;min-height:0;scroll-behavior:smooth}
+.welcome{margin:12px 0 4px;padding:18px;border-radius:var(--r);background:var(--surface-2);border:1px solid var(--border);color:var(--text-2);font-size:16px}
+.welcome h2{margin:0 0 6px;font-size:20px;color:var(--text)}.welcome p{margin:0 0 14px}
+.welcome .btn{width:100%;min-height:56px;font-size:17px}.welcome .or{margin:14px 0 0;font-size:15px;color:var(--muted)}
+.msg{display:flex;flex-direction:column;margin:12px 0;max-width:94%;min-width:0}.msg.u{margin-left:auto;align-items:flex-end}
+.bub{overflow-wrap:anywhere;min-width:0;padding:11px 15px;border-radius:16px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);line-height:1.55;font-size:16px}
+.msg.u .bub{background:var(--accent);border-color:transparent;color:#fff;border-bottom-right-radius:5px}
+.msg.b .bub{border-bottom-left-radius:5px}.bub ul{margin:4px 0;padding-left:20px}.bub li{margin:3px 0}.bub p{margin:0 0 8px}.bub p:last-child{margin:0}
+.tools{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}.tc{display:inline-flex;align-items:center;gap:5px;font-size:13.5px;padding:3px 10px;border-radius:999px;background:var(--ok-bg);border:1px solid #c4e3cf;color:#1f5c38}
+.tc.err{background:var(--err-bg);border-color:#f5c2bd;color:var(--err)}.meta{color:var(--muted);font-size:13px;margin-top:4px}
+.seemap{display:none;margin-top:8px}
+.typing{display:inline-flex;gap:5px;align-items:center}.typing i{width:8px;height:8px;border-radius:50%;background:var(--muted);animation:bl 1.2s infinite}.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes bl{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-2px)}}
+.msg.sys .bub{background:var(--surface-2);border-style:dashed;color:var(--text-2);font-size:15px}
+.msg.b .bub .mapchg{display:block;margin:-2px -4px 8px;padding:7px 10px;border-radius:10px;background:var(--ok-bg);border:1px solid #c4e3cf;color:#1f5c38;font-size:15px}
+#sugg{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:8px;padding:2px 16px 10px;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 85%,transparent);mask-image:linear-gradient(90deg,#000 85%,transparent)}#sugg::-webkit-scrollbar{display:none}#sugg button{white-space:nowrap;flex:none}
+#p-lib:has(#welcome) #sugg{display:none!important}
+.wsugg{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.wsugg button{border:1px solid var(--border-2);background:var(--surface);color:var(--text-2);border-radius:999px;min-height:44px;padding:6px 16px;font-size:15.5px;text-align:left}.wsugg button:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
+#sugg button{border:1px solid var(--border-2);background:var(--surface);color:var(--text-2);border-radius:999px;min-height:40px;padding:6px 14px;font-size:15px;text-align:left;transition:all .15s}
+#sugg button:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
+#sugg .pickbtn{border-color:var(--accent-border);color:var(--accent-2);background:var(--accent-bg);font-weight:600}
+#f{display:flex;gap:8px;padding:10px 16px 16px;border-top:1px solid var(--border);background:var(--surface)}
+#f input{flex:1;min-width:0;height:52px;padding:0 16px;background:var(--surface-2);border:2px solid var(--border-2);border-radius:14px;outline:none;font-size:17px}
+#f input:focus{border-color:var(--accent);background:var(--surface);box-shadow:0 0 0 4px var(--accent-bg)}
+#f button{height:52px;padding:0 20px;border-radius:14px;border:0;background:var(--accent);color:#fff;font-weight:600;font-size:16px;display:inline-flex;align-items:center;gap:6px}#f button:hover{background:var(--accent-2)}#f button:disabled{opacity:.45;cursor:default}
+
+/* recommendation wizard */
+.wiz{width:100%;max-width:100%}.wiz .bub{background:var(--surface);border:2px solid var(--accent-border)}
+.wq{font-weight:600;color:var(--text);margin-bottom:10px;font-size:17px;line-height:1.4}.wstep{font-size:13.5px;color:var(--accent);font-weight:700;margin-bottom:4px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;min-height:52px;padding:10px 14px;border-radius:12px;border:2px solid var(--border-2);background:var(--surface-2);color:var(--text);font-size:16px;font-weight:500;transition:all .12s}
+.opt:hover:not(:disabled){border-color:var(--accent);background:var(--accent-bg)}.opt:disabled{cursor:default;opacity:.55}.opt.on{opacity:1;border-color:var(--accent);background:var(--accent);color:#fff}
+.opt span{color:inherit;opacity:.7;font-size:14px;white-space:nowrap}
+.wfoot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-top:10px;font-size:13.5px;color:var(--muted)}
+.wfoot .stop{border:1px solid var(--border-2);background:var(--surface);border-radius:999px;min-height:40px;padding:0 14px;font-size:15px;font-weight:600;color:var(--text-2)}.wfoot .stop:hover{border-color:var(--accent);color:var(--accent)}
+.top3{display:flex;flex-direction:column;gap:10px;margin-top:8px}.pick{display:grid;grid-template-columns:32px 1fr;gap:10px;padding:14px;border:1px solid var(--border);border-radius:14px;background:var(--surface-2)}
+.pick .n{width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:15px;display:grid;place-items:center}.pick:first-child .n{background:var(--gold)}
+.pick .tt{display:inline;font-weight:700;font-size:17px;color:var(--text);cursor:pointer}.pick .tt:hover{color:var(--accent);text-decoration:underline}
+.pick .mt{font-size:14px;color:var(--muted);margin:2px 0 6px}.pick p{margin:0 0 6px;font-size:15.5px}.pick .why{color:var(--text-2);font-size:15px}.pick .why b{color:var(--accent);font-weight:700}
+.star{color:var(--gold)}
+
+/* book link chip */
+a.bklink{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:40px;height:40px;padding:0 10px;border-radius:10px;border:1px solid #e6d6bd;background:#faf3e6;color:#5b3f1f;text-decoration:none;font-size:14px;font-weight:600;flex:none;transition:background .15s,border-color .15s}
+a.bklink:hover{background:#f3e5cc;border-color:#d5bf96}a.bklink.inl{height:28px;min-width:28px;padding:0 6px;margin-left:6px;vertical-align:-6px;border-radius:8px}
+
+/* top books */
+.toph{padding:12px 16px 4px;font-size:15px;color:var(--text-2);line-height:1.5}.toph span{border-bottom:1px dotted var(--border-2);cursor:help}
+#toplist{flex:1;overflow:auto;padding:4px 12px 16px;min-height:0}
+.bk{display:grid;grid-template-columns:28px minmax(0,1fr) auto auto;gap:12px;align-items:center;min-height:68px;padding:10px 12px;border:1px solid var(--border);border-radius:14px;margin:8px 0;background:var(--surface);cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.bk:hover{border-color:var(--accent-border);box-shadow:0 4px 14px rgba(60,40,20,.08)}.bk.sel{border-color:#e7b866;background:#fffaf0}
+.bk .rk{font-size:15px;color:var(--muted);text-align:center;font-variant-numeric:tabular-nums;font-weight:600}
+.bk .t{font-weight:600;font-size:16px;line-height:1.3;color:var(--text);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.bk .a{font-size:14.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}.bk .m{text-align:right;font-variant-numeric:tabular-nums}
+.bk .rt{display:flex;align-items:center;gap:6px;justify-content:flex-end;font-weight:700;font-size:15px;color:var(--text)}.bk .rt i{width:12px;height:12px;border-radius:50%;border:1px solid rgba(31,41,55,.35);display:inline-block}
+.bk .c{color:var(--muted);font-size:13.5px;margin-top:1px;white-space:nowrap}
+.tempty,.empty{padding:36px 18px;text-align:center;color:var(--muted);font-size:16px}.tempty b,.empty b{display:block;color:var(--text);margin-bottom:6px;font-size:17px}
+
+/* profile */
+#p-prof{padding:14px 14px 20px;gap:14px;overflow:auto}
+.card{border:1px solid var(--border);border-radius:var(--r);padding:18px;background:var(--surface);box-shadow:0 1px 2px rgba(60,40,20,.04)}
+.card h3{margin:0 0 6px;font-size:18px;color:var(--text);display:flex;align-items:center}.card p{margin:0 0 12px;color:var(--text-2);font-size:15.5px;line-height:1.55}
+#ptext{width:100%;min-height:220px;resize:vertical;border:2px solid var(--border-2);border-radius:12px;padding:12px 14px;font-size:16px;line-height:1.6;color:var(--text);background:var(--surface-2)}
+#ptext:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-bg);background:var(--surface)}
+.prow{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-top:12px}#pstat{font-size:15px;color:var(--muted)}#pstat.ok{color:var(--ok)}
+.imp{display:flex;gap:14px;align-items:flex-start}.glogo{flex:none;width:44px;height:44px;border-radius:12px;background:#f4efe6;display:grid;place-items:center;font-weight:700;color:#5a4634;font-family:Georgia,serif;font-size:24px;border:1px solid #e6dfcf}
+.imp code{font-size:14px;background:var(--surface-3);padding:1px 5px;border-radius:5px;overflow-wrap:anywhere}
+details.card{padding:0}details.card>summary{list-style:none;cursor:pointer;padding:16px 18px;min-height:56px;display:flex;align-items:center;gap:10px;font-size:17px;font-weight:600}
+details.card>summary::-webkit-details-marker{display:none}details.card>summary::after{content:"";margin-left:auto;width:10px;height:10px;border-right:2.5px solid var(--muted);border-bottom:2.5px solid var(--muted);transform:rotate(45deg);transition:transform .15s}
+details.card[open]>summary::after{transform:rotate(-135deg)}details.card>summary small{font-weight:400;color:var(--muted);font-size:14px}
+.adv{padding:0 18px 18px}.adv>p{margin:0 0 12px;font-size:15px;color:var(--text-2)}
+.libbar{display:flex;align-items:center;flex-wrap:wrap;gap:10px}.libbar .lbl{font-size:15px;color:var(--text-2);font-weight:600}
+.msel{position:relative;display:inline-flex;align-items:center;min-width:0;flex:1 1 200px;color:var(--text-2)}.msel svg{position:absolute;right:12px;pointer-events:none;color:var(--muted)}
+.msel select{appearance:none;-webkit-appearance:none;width:100%;height:44px;padding:0 34px 0 12px;border:2px solid var(--border-2);border-radius:10px;background:var(--surface);color:var(--text);font-size:16px;font-weight:500;cursor:pointer;text-overflow:ellipsis}
+.msel select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-bg)}
+.mstat{display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:0 12px;border:1px solid var(--border);border-radius:999px;background:var(--surface-2);font-size:14px;color:var(--text-2);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.mstat .mtx{overflow:hidden;text-overflow:ellipsis}.mstat .dot{flex:none;background:#cbbfb2}.mstat.ok{color:#1f5c38;background:var(--ok-bg);border-color:#c4e3cf}.mstat.ok .dot{background:var(--ok)}
+.mstat.err{color:var(--err);background:var(--err-bg);border-color:#f5c2bd}.mstat.err .dot{background:var(--err)}.mstat.busy .dot{background:var(--gold);animation:pulse 1s infinite}@keyframes pulse{50%{opacity:.35}}
+.cform{margin-top:12px;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);display:grid;gap:10px}.cform[hidden]{display:none}
+.cfh b{display:block;font-size:16px}.cfh span{font-size:14px;color:var(--muted)}
+.cform label{display:grid;gap:4px;font-size:14.5px;font-weight:600;color:var(--text-2)}.cform label i{font-weight:400;color:var(--muted)}
+.cform input{height:44px;padding:0 12px;border:2px solid var(--border-2);border-radius:10px;background:var(--surface);font-size:16px;font-weight:400;color:var(--text)}.cform input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-bg)}
+.crow{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px}#cmsg{font-size:14px;color:var(--muted);overflow-wrap:anywhere}#cmsg:empty{display:none}#cmsg.err{color:var(--err);background:var(--err-bg);border:1px solid #f5c2bd;border-radius:8px;padding:8px 10px}.cnote{font-size:13.5px;color:var(--muted)}
+
+#bnav{display:none}
+.mobonly{display:none!important}
+
+/* ---------- medium desktops: tighter side panel ---------- */
+@media (max-width:1180px){:root{--side:360px}header{gap:14px}.brand small{display:none}#modectl .lbl{display:none}}
+
+/* ---------- phones and tablets: one screen at a time, bottom tab bar ---------- */
+@media (max-width:899px){
+ :root{--hdr:auto;--bnav:calc(68px + env(safe-area-inset-bottom))}
+ #app{grid-template-rows:auto minmax(0,1fr) var(--bnav)}
+ header{flex-wrap:wrap;gap:10px 12px;padding:10px 14px 12px;padding-top:max(10px,env(safe-area-inset-top))}
+ .brand{flex:1}.logo{width:36px;height:36px}.brand h1{font-size:21px}
+ .search{order:3;flex:1 0 100%;max-width:none}
+ .hdr-right .btn{min-height:44px;padding:0 14px;font-size:15px}
+ main{grid-template-columns:minmax(0,1fr)}
+ #stage{padding:0;gap:0}#mapcard{border:0;border-radius:0;box-shadow:none;min-height:0}
+ #maphead{padding:8px 14px}#maphead .mh-t span{display:none}#maphead .mh-t b{font-size:16px}
+ aside{position:absolute;inset:0;border-left:0;z-index:20}
+ body[data-view=map] aside{display:none}
+ .tabs{display:none}
+ #modectl{display:none}#fbtn{display:inline-flex}
+ #zoomctl{top:auto;bottom:14px;right:12px}
+ #bookcard{bottom:10px;width:calc(100% - 20px);max-height:calc(100% - 20px)}
+ /* filters become a slide-up sheet */
+ #filters{position:fixed;left:0;right:0;bottom:0;z-index:50;border-radius:22px 22px 0 0;border:0;box-shadow:0 -12px 40px rgba(60,40,20,.25);padding:8px 18px calc(16px + env(safe-area-inset-bottom));max-height:85dvh;overflow:auto;transform:translateY(105%);transition:transform .25s ease;visibility:hidden}
+ #filters.open{transform:none;visibility:visible}
+ .sheet-h{display:block;width:44px;height:5px;border-radius:5px;background:var(--border-2);margin:4px auto 10px}
+ #filters .fh b{font-size:19px}.sliders{grid-template-columns:1fr;gap:10px}
+ #fdone{display:flex;width:100%;min-height:52px;margin-top:10px;font-size:17px;gap:.3em}#filters .fh span{flex-basis:100%;order:3}
+ #scrim{position:fixed;inset:0;background:rgba(30,20,10,.35);z-index:45;opacity:0;pointer-events:none;transition:opacity .2s}#scrim.on{opacity:1;pointer-events:auto}
+ #bnav{display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border-top:1px solid var(--border);padding:0 4px env(safe-area-inset-bottom);z-index:40;box-shadow:0 -2px 12px rgba(60,40,20,.06)}
+ #bnav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:0;background:none;color:var(--muted);font-size:13px;font-weight:600;min-height:64px;padding:6px 2px;border-radius:12px}
+ #bnav button svg{width:26px;height:26px}#bnav button[aria-current=page]{color:var(--accent)}
+ #bnav button[aria-current=page] .ic{background:var(--accent-bg)}#bnav .ic{display:grid;place-items:center;width:56px;height:32px;border-radius:16px}
+ .mobonly{display:revert!important}.seemap{display:inline-flex}
+ .msg{max-width:100%}
+}
+@media (max-width:420px){.hdr-right .btn{padding:0 12px}.bk{grid-template-columns:minmax(0,1fr) auto auto;gap:10px}.bk .rk{display:none}}
+@media (max-width:899px) and (max-height:500px){header{padding-top:6px;padding-bottom:6px}.search{order:0;flex:1 1 200px}.brand small{display:none}.ivbar{display:none}.welcome{margin-top:8px;padding:14px}.welcome h2{font-size:18px}#bnav button{min-height:52px;flex-direction:row;gap:8px}#bnav .ic{width:40px}:root{--bnav:calc(52px + env(safe-area-inset-bottom))}#maphead{display:none}}
+@media (min-width:900px) and (max-height:560px){:root{--hdr:58px}#maphead .mh-t span{display:none}#filters{padding:8px 14px 6px}#madewith{display:none}.sl .hint{display:none}}
+</style></head><body data-view=lib><div id=app>
 <header>
- <div class=brand><div class=logo><svg class="amark" width=30 height=30 viewBox="0 0 32 32" aria-hidden=true><g shape-rendering="crispEdges"><rect width="32" height="32" fill="#FAFAF7"/><rect x="1" y="1" width="30" height="30" fill="none" stroke="#9A2400" stroke-width="2"/><rect x="1" y="1" width="7" height="30" fill="#9A2400"/></g><rect x="13" y="10" width="4" height="6" rx="2" fill="#9A2400"/><rect x="21" y="10" width="4" height="6" rx="2" fill="#9A2400"/></svg></div>
-  <div><h1>Atlas</h1><small id=subtitle>your books · mapped by description</small></div></div>
- <div class=search><svg width=15 height=15 viewBox="0 0 24 24" fill=none stroke="#7a8193" stroke-width=2.2><circle cx=11 cy=11 r=7 /><path d="m20 20-3.5-3.5"/></svg>
-  <input id=sq placeholder="Find a book and fly to it…" autocomplete=off spellcheck=false><div id=ac></div></div>
- <div class=hdr-right><span class=pill id=sync><span class=dot></span><span>Connecting…</span></span><span class=pill id=who>—</span>
-  <button class=btn id=bReset title="Reset zoom and filters">Reset view</button></div>
+ <div class=brand><div class=logo><svg class="amark" width=40 height=40 viewBox="0 0 32 32" aria-hidden=true><g shape-rendering="crispEdges"><rect width="32" height="32" fill="#FAFAF7"/><rect x="1" y="1" width="30" height="30" fill="none" stroke="#9A2400" stroke-width="2"/><rect x="1" y="1" width="7" height="30" fill="#9A2400"/></g><rect x="13" y="10" width="4" height="6" rx="2" fill="#9A2400"/><rect x="21" y="10" width="4" height="6" rx="2" fill="#9A2400"/></svg></div>
+  <div style="min-width:0"><h1>Atlas</h1><small id=subtitle>your books, mapped by what they are about</small></div></div>
+ <div class=search role=search><svg width=20 height=20 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2.4 aria-hidden=true><circle cx=11 cy=11 r=7 /><path d="m20 20-3.5-3.5"/></svg>
+  <label for=sq class=sr>Find a book by title or author</label><input id=sq type=search enterkeyhint=search placeholder="Find a book by title or author" autocomplete=off spellcheck=false><div id=ac role=listbox></div></div>
+ <div class=hdr-right><span class=pill id=sync role=status><span class=dot></span><span>Connecting…</span></span><span class=pill id=who>—</span>
+  <button class=btn id=bReset title="Show all books again and clear every filter"><svg width=18 height=18 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2.4 stroke-linecap=round stroke-linejoin=round aria-hidden=true><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg><span>Start over</span></button></div>
 </header>
 <main>
- <section id=stage><div id=mapwrap><div class=skel id=skel><div></div><div></div><div></div></div><iframe id=fv sandbox="allow-scripts allow-same-origin" title="FlexViz dashboard"></iframe></div>
-  <div id=filters><div class=fh><b>Filters</b><span id=fsum>none — all books</span><a id=freset>Reset all</a></div><div class=sliders id=sliders></div></div>
-  <div id=madewith><div class=mw-mark>F</div><div><div class=mw-t>Made with <a href="https://flexviz.tech" target=_blank rel="noopener noreferrer">FlexViz</a></div><div class=mw-s>Interactive cross-filter dashboards in pure Python. The map and sliders above share one FlexViz state with Atlas AI.</div></div><a class=mw-go href="https://flexviz.tech" target=_blank rel="noopener noreferrer">flexviz.tech ↗</a></div></section>
+ <section id=stage aria-label="Book map">
+  <div id=mapcard>
+   <div id=maphead><div class=mh-t><b>Book map</b><span>Each dot is a book. Books about similar things sit close together.</span></div><span class=mcount><b id=cnt2>—</b> books shown</span>
+    <div id=topicbar hidden role=group aria-label="Jump to a topic on the map"><span class=tl>Jump to</span><div class=tchips id=tchips></div></div></div>
+   <div id=mapwrap><div class=skel id=skel>Loading the map…</div><iframe id=fv sandbox="allow-scripts allow-same-origin" title="Map of books"></iframe>
+    <div class=mctl id=modectl role=group aria-label="What dragging the map does"><span class=lbl>Drag to</span>
+     <button type=button data-mode=pan aria-pressed=true><svg width=18 height=18 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2.2 stroke-linecap=round stroke-linejoin=round aria-hidden=true><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>Move around</button>
+     <button type=button data-mode=zoom aria-pressed=false><svg width=18 height=18 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2.2 stroke-dasharray="3 2" aria-hidden=true><rect x=4 y=4 width=16 height=16 rx=2 /></svg>Zoom to an area</button></div>
+    <button type=button class="mctl mbtn" id=fbtn aria-controls=filters><svg width=20 height=20 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2.4 stroke-linecap=round aria-hidden=true><path d="M4 6h16M7 12h10M10 18h4"/></svg>Filters<span class=badge id=fcount>0</span></button>
+    <div class=mctl id=zoomctl role=group aria-label="Zoom"><button type=button class="mbtn big" id=zin title="Zoom in" aria-label="Zoom in">+</button><button type=button class="mbtn big" id=zout title="Zoom out" aria-label="Zoom out">−</button>
+     <button type=button class=mbtn id=zall title="Show the whole map again (your filters stay on)"><svg width=18 height=18 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2.4 stroke-linecap=round stroke-linejoin=round aria-hidden=true><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>Reset</button></div>
+    <div id=bookcard hidden role=dialog aria-labelledby=bc-title></div>
+   </div>
+  </div>
+  <div id=filters role=region aria-label="Filters"><div class=sheet-h aria-hidden=true></div>
+   <div class=fh><b>Narrow it down</b><span id=fsum>Showing all books</span><button type=button class="btn sm" id=freset disabled title="Turn every filter off"><svg width=18 height=18 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2.4 stroke-linecap=round stroke-linejoin=round aria-hidden=true><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>Reset filters</button></div><div class=sliders id=sliders></div>
+   <button type=button class="btn pri" id=fdone>Show <span id=fdonen></span> books</button>
+   <div id=madewith><div class=mw-mark>F</div><div>Made with <a href="https://flexviz.tech" target=_blank rel="noopener noreferrer">FlexViz ↗</a>, interactive dashboards in pure Python</div></div></div>
+  <div id=scrim></div>
+ </section>
  <aside>
-  <nav class=tabs role=tablist>
-   <button class="tab on" data-tab=lib role=tab><svg class="amark" width=18 height=18 viewBox="0 0 32 32" aria-hidden=true><g shape-rendering="crispEdges"><rect width="32" height="32" fill="#FAFAF7"/><rect x="1" y="1" width="30" height="30" fill="none" stroke="#9A2400" stroke-width="2"/><rect x="1" y="1" width="7" height="30" fill="#9A2400"/></g><rect x="13" y="10" width="4" height="6" rx="2" fill="#9A2400"/><rect x="21" y="10" width="4" height="6" rx="2" fill="#9A2400"/></svg><span>Atlas AI</span></button>
-   <button class=tab data-tab=top role=tab><span>Top rated in view</span></button>
-   <button class=tab data-tab=prof role=tab><span>Profile</span></button>
+  <nav class=tabs role=tablist aria-label="Panels">
+   <button class="tab on" data-tab=lib role=tab aria-selected=true><svg class="amark" width=22 height=22 viewBox="0 0 32 32" aria-hidden=true><g shape-rendering="crispEdges"><rect width="32" height="32" fill="#FAFAF7"/><rect x="1" y="1" width="30" height="30" fill="none" stroke="#9A2400" stroke-width="2"/><rect x="1" y="1" width="7" height="30" fill="#9A2400"/></g><rect x="13" y="10" width="4" height="6" rx="2" fill="#9A2400"/><rect x="21" y="10" width="4" height="6" rx="2" fill="#9A2400"/></svg><span>Ask Atlas</span></button>
+   <button class=tab data-tab=top role=tab aria-selected=false><span>Top books</span></button>
+   <button class=tab data-tab=prof role=tab aria-selected=false><span>My tastes</span></button>
   </nav>
-  <div class=ivbar><span class=ivn><b class=count id=cnt>—</b> books in view</span><div id=ctx></div></div>
-  <section class="pane on" id=p-lib>
-   <div class=libbar><span class=lbl>Model</span><label class=msel><select id=msel aria-label="Atlas AI model"><option>Loading…</option></select><svg width=12 height=12 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2.4 stroke-linecap=round><path d="M6 9l6 6 6-6"/></svg></label><button type=button class=mstat id=mstat title="Test the connection"><span class=dot></span><span class=mtx>—</span></button></div>
-   <form class=cform id=cform hidden autocomplete=off><div class=cfh><b>Connect your own model</b><span>Any OpenAI-compatible API: OpenAI, xAI, Groq, OpenRouter, LM Studio, vLLM…</span></div>
-    <label><span>Base URL</span><input id=cbase placeholder="https://api.openai.com/v1" spellcheck=false></label>
-    <label><span>Model</span><input id=cmodel placeholder="gpt-4.1-mini" spellcheck=false></label>
-    <label><span>API key <i>optional</i></span><input id=ckey type=password placeholder="sk-…" autocomplete=new-password spellcheck=false></label>
-    <div id=cmsg></div><div class=crow><button type=button class=btn id=ccancel>Cancel</button><button type=submit class="btn pri" id=cgo>Test &amp; connect</button></div>
-    <div class=cnote>Saved on this computer only (librarian_model.json). The key is never sent back to the browser.</div></form>
-   <div id=log><div class=welcome id=welcome><b>Hi, I'm Atlas AI.</b> I can move the map for you. Try <i>books like {{EX_TITLE}}</i>, <i>{{EX_FILTER}}</i>, <i>{{EX_PAGES}}</i>, <i>zoom out</i> or <i>reset filters</i>. Or ask me to <i>recommend something from here</i> and I'll ask a couple of quick questions about the books in view.</div></div>
+  <div class=ivbar><span class=ivn><b class=count id=cnt>—</b> books on the map</span><div id=ctx></div></div>
+  <section class="pane on" id=p-lib aria-label="Ask Atlas">
+   <div id=log aria-live=polite><div class=welcome id=welcome><h2>Hello! Looking for your next book?</h2><p>I can suggest one for you. I'll ask two or three easy questions, then show you my three best picks.</p>
+    <button type=button class="btn pri" id=wizgo><svg width=20 height=20 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2.2 stroke-linecap=round stroke-linejoin=round aria-hidden=true><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg>Help me pick a book</button>
+    <p class=or>Or tap one of these, or type what you're in the mood for in your own words:</p><div class=wsugg id=wsugg></div></div></div>
    <div id=sugg></div>
-   <form id=f><input id=q autocomplete=off placeholder="Ask, filter or zoom: 'books like {{EX_TITLE}}'"><button id=send title=Send><svg width=16 height=16 viewBox="0 0 24 24" fill=none stroke="#fff" stroke-width=2.4 stroke-linecap=round stroke-linejoin=round><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></form>
+   <form id=f><label for=q class=sr>Your question for Atlas</label><input id=q autocomplete=off enterkeyhint=send placeholder="Type here, e.g. books like {{EX_TITLE}}"><button id=send title=Send>Send<svg width=18 height=18 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2.6 stroke-linecap=round stroke-linejoin=round aria-hidden=true><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></form>
   </section>
-  <section class=pane id=p-top>
-   <div class=toph>Best books in the current zoom and filters, <span title="Bayesian average: (ratings × average + 1000 × mean of view) ÷ (ratings + 1000)">rating weighted by number of ratings</span>. Click one to fly to it.</div>
+  <section class=pane id=p-top aria-label="Top books">
+   <div class=toph>The best-loved books in the part of the map you're looking at (<span title="Bayesian average: (ratings × average + 1000 × mean of view) ÷ (ratings + 1000)">rating weighted by how many people rated it</span>). Tap a book to see it on the map.</div>
    <div id=toplist></div>
   </section>
-  <section class=pane id=p-prof>
-   <div class=card><h3>What you like</h3><p>Favourite books and authors, genres and moods you love, things you avoid. Atlas AI reads this every time it answers or recommends.</p>
-    <textarea id=ptext spellcheck=true placeholder="Favourite books: {{EX_FAVS}}&#10;Authors I love: {{EX_AUTHORS}}&#10;I like: clever sci-fi, found family, humour&#10;I avoid: graphic violence, love triangles"></textarea>
-    <div class=prow><button class="btn pri" id=psave>Save profile</button><span id=pstat></span></div></div>
+  <section class=pane id=p-prof aria-label="My tastes">
+   <div class=card><h3>What you like</h3><p>Tell Atlas about books and authors you love, and things you'd rather avoid. Atlas reads this every time it suggests a book.</p>
+    <label for=ptext class=sr>What you like</label><textarea id=ptext spellcheck=true placeholder="Favourite books: {{EX_FAVS}}&#10;Authors I love: {{EX_AUTHORS}}&#10;I like: gentle mysteries, funny stories, happy endings&#10;I avoid: graphic violence"></textarea>
+    <div class=prow><button class="btn pri" id=psave>Save</button><span id=pstat role=status></span></div></div>
    <div class="card imp"><div class=glogo>g</div><div><h3>Your Goodreads library</h3><p>Export your library from Goodreads (My Books → Import and export) and run <code>atlas import goodreads_library_export.csv</code> to map it; copy the file into <code>~/.atlas/</code> (or <code>$ATLAS_HOME</code>) so Atlas AI can use your shelves and ratings as your profile.</p></div></div>
+   <details class=card id=advanced><summary>Advanced: AI model <small id=advsum></small></summary><div class=adv>
+    <p>Which AI model Atlas uses to answer. Simple map commands like <i>zoom out</i> always work, even without one.</p>
+    <div class=libbar><label class=msel><span class=sr>AI model</span><select id=msel aria-label="Atlas AI model"><option>Loading…</option></select><svg width=14 height=14 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2.4 stroke-linecap=round aria-hidden=true><path d="M6 9l6 6 6-6"/></svg></label><button type=button class=mstat id=mstat title="Test the connection"><span class=dot></span><span class=mtx>—</span></button></div>
+    <form class=cform id=cform hidden autocomplete=off><div class=cfh><b>Connect your own model</b><span>Any OpenAI-compatible API: OpenAI, xAI, Groq, OpenRouter, LM Studio, vLLM…</span></div>
+     <label><span>Base URL</span><input id=cbase placeholder="https://api.openai.com/v1" spellcheck=false></label>
+     <label><span>Model</span><input id=cmodel placeholder="gpt-4.1-mini" spellcheck=false></label>
+     <label><span>API key <i>optional</i></span><input id=ckey type=password placeholder="sk-…" autocomplete=new-password spellcheck=false></label>
+     <div id=cmsg></div><div class=crow><button type=button class=btn id=ccancel>Cancel</button><button type=submit class="btn pri" id=cgo>Test &amp; connect</button></div>
+     <div class=cnote>Saved on this computer only (librarian_model.json). The key is never sent back to the browser.</div></form></div></details>
   </section>
-  <button id=fab title="Ask Atlas AI"><svg class="amark" width=30 height=30 viewBox="0 0 32 32" aria-hidden=true><g shape-rendering="crispEdges"><rect width="32" height="32" fill="#FAFAF7"/><rect x="1" y="1" width="30" height="30" fill="none" stroke="#9A2400" stroke-width="2"/><rect x="1" y="1" width="7" height="30" fill="#9A2400"/></g><rect x="13" y="10" width="4" height="6" rx="2" fill="#9A2400"/><rect x="21" y="10" width="4" height="6" rx="2" fill="#9A2400"/></svg><span class=tip>Ask Atlas AI</span></button>
  </aside>
-</main></div>
+</main>
+<nav id=bnav aria-label="Sections">
+ <button type=button data-go=map><span class=ic><svg viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2 stroke-linecap=round stroke-linejoin=round aria-hidden=true><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg></span>Map</button>
+ <button type=button data-go=lib aria-current=page><span class=ic><svg viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2 stroke-linecap=round stroke-linejoin=round aria-hidden=true><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></span>Ask Atlas</button>
+ <button type=button data-go=top><span class=ic><svg viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2 stroke-linecap=round stroke-linejoin=round aria-hidden=true><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg></span>Top books</button>
+ <button type=button data-go=prof><span class=ic><svg viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2 stroke-linecap=round stroke-linejoin=round aria-hidden=true><path d="M12 21s-7-4.4-9.3-9A5.2 5.2 0 0 1 12 6.4 5.2 5.2 0 0 1 21.3 12C19 16.6 12 21 12 21z"/></svg></span>My tastes</button>
+</nav>
+</div>
 <script>
 // Every POST to /api/* carries the per-launch token from <meta name=atlas-token> and a JSON content type (security.py).
 (()=>{const T=document.querySelector('meta[name=atlas-token]')?.content||'';const f=window.fetch.bind(window);window.fetch=(u,o={})=>{const m=(o.method||'GET').toUpperCase();if(m!=='GET'&&m!=='HEAD'&&typeof u==='string'&&u.startsWith('/api/'))o={...o,headers:{'Content-Type':'application/json',...(o.headers||{}),'X-Atlas-Token':T}};return f(u,o)}})();
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt=n=>n==null?'—':n.toLocaleString('en'),kfmt=n=>n==null?'':n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(n>=1e4?0:1)+'k':String(n);
-let W=null,lastKey=null,focus=null,busy=false,msgs=[],FIGS={},thinking=false;
+let W=null,lastKey=null,focus=null,busy=false,msgs=[],FIGS={},thinking=false,CFG={has_rating:true};
+const isNarrow=()=>matchMedia('(max-width:899px)').matches;
+const popWord=()=>/download/i.test(CFG.attribution||'')?'downloads':'ratings';
 const FVCSS=`#fv-brand{display:none!important}@font-face{font-family:Inter;src:url(/assets/InterVariable.woff2) format('woff2');font-weight:100 900}
-:root{--fv-font:Inter,ui-sans-serif,system-ui,sans-serif;--fv-bg:#f5f6fa;--fv-surface:#ffffff;--fv-surface-2:#ffffff;--fv-surface-hover:#f1f2f7;--fv-surface-overlay:rgba(255,255,255,.96);
---fv-panel-bg:#ffffff;--fv-panel-surface:#ffffff;--fv-border:rgba(15,23,42,.08);--fv-border-btn:rgba(15,23,42,.14);--fv-border-soft:rgba(15,23,42,.08);--fv-panel-border:rgba(15,23,42,.08);
---fv-text:#141824;--fv-text-muted:#7a8193;--fv-text-secondary:#4a5162;--fv-text-strong:#0f1320;--fv-text-faint:#a3a9b8;--fv-text-hover:#141824;
---fv-accent:#4f5bd5;--fv-accent-dark:#3f4ac0;--fv-accent-bg:rgba(79,91,213,.08);--fv-accent-border:rgba(79,91,213,.3);--fv-accent-text:#4f5bd5;--fv-accent-text-strong:#3f4ac0;
---fv-danger-bg:#fef2f2;--fv-danger-border:#fecaca;--fv-shadow-sm:none;--fv-panel-radius:12px;--fv-radius:7px;--fv-toolbar-height:40px;
---fv-filter-strip-bg:rgba(79,91,213,.05);--fv-filter-strip-border:rgba(79,91,213,.22);--fv-filter-strip-text:#3f4ac0;--fv-filter-chip-bg:rgba(79,91,213,.08);--fv-filter-chip-border:rgba(79,91,213,.25);
---fv-filter-chip-source-bg:rgba(79,91,213,.14);--fv-filter-chip-source-text:#3f4ac0;--fv-filter-chip-separator-text:#7a8193;--fv-filter-chip-joiner-bg:rgba(15,23,42,.05);
---fv-filter-chip-remove-bg:rgba(79,91,213,.08);--fv-filter-chip-remove-border:rgba(79,91,213,.25);--fv-filter-chip-remove-text:#4f5bd5;
---fv-brand-image:url(/assets/wordmark-light.png);--fv-hover-color:rgba(217,119,6,.85);--fv-hover-cell-border:rgba(217,119,6,.9)}
-html,body{background:#f5f6fa!important;color-scheme:light}#fv-dashboard>.fv-dashboard-item:not(:first-child),#fv-filter-strip{display:none!important}#fv-dashboard{grid-template-rows:none!important;grid-auto-rows:80px!important}body{overflow:hidden!important}::-webkit-scrollbar{width:9px}::-webkit-scrollbar-thumb{background:#d5d8e1;border-radius:9px}
-.fvx-legend{position:absolute;z-index:25;pointer-events:none;padding:7px 9px 6px;border-radius:9px;background:rgba(255,255,255,.88);border:1px solid rgba(15,23,42,.10);box-shadow:0 2px 8px rgba(15,23,42,.06);font:10.5px/1.3 Inter,system-ui,sans-serif;color:#4a5162;width:132px}
-.fvx-legend .lt{font-weight:600;color:#2b3140;margin-bottom:3px}.fvx-legend .bar{height:8px;border-radius:4px;border:1px solid rgba(31,41,55,.25)}
-.fvx-legend .ticks{display:flex;justify-content:space-between;color:#6b7280;font-size:10px;margin-top:1px}.fvx-legend .szs{display:flex;align-items:flex-end;gap:10px}
-.fvx-legend .sz{display:flex;align-items:center;gap:4px;color:#6b7280}.fvx-legend .sz i{display:inline-block;border-radius:50%;background:#facc15;border:.7px solid rgba(31,41,55,.6)}.fvx-legend .ln{margin-top:5px;color:#9aa1b1;font-size:10px}
-#fvx-tip{position:fixed;z-index:9999;pointer-events:none;display:none;max-width:320px;padding:10px 12px;border-radius:10px;background:#fff;border:1px solid rgba(15,23,42,.12);box-shadow:0 10px 30px rgba(15,23,42,.16),0 2px 6px rgba(15,23,42,.06);font:12px/1.45 Inter,system-ui,sans-serif;color:#2b3140}
-#fvx-tip .tgr{margin-top:7px;padding-top:6px;border-top:1px solid rgba(15,23,42,.08);font-size:11px;color:#5b3f1f;display:flex;align-items:center;gap:5px}#fvx-tip .tgr b{display:inline-grid;place-items:center;width:15px;height:15px;border-radius:4px;background:#f8f3e8;border:1px solid #e3d6bf;font:700 11px/1 Georgia,serif;color:#5b3f1f}
-#fvx-tip .tt{font-weight:600;font-size:13px;color:#141824;line-height:1.3}#fvx-tip .ta{color:#6b7280;margin:2px 0 6px}#fvx-tip .ta b{color:#4338ca;font-weight:600}
-#fvx-tip .tm{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}#fvx-tip .tm span{padding:1px 7px;border-radius:999px;background:#f3f4f8;border:1px solid rgba(15,23,42,.07);font-size:11px;color:#4a5162}
-#fvx-tip .tm .st{background:#fff7e6;border-color:#f6d28b;color:#9a5b00}#fvx-tip .tm .pg{background:#f5edff;border-color:#e2cdfc;color:#7e22ce}#fvx-tip .tm .pc{background:#eef0fb;border-color:#cfd4f6;color:#4338ca}
-#fvx-tip .tb{color:#4a5162;font-size:11.5px}#fvx-tip .ld{color:#9aa1b1;font-style:italic;font-size:11.5px}#fvx-tip ol{margin:4px 0 0;padding-left:18px}#fvx-tip li{margin:2px 0}#fvx-tip li span{color:#6b7280}
-#fv-header{background:#f5f6fa!important;border-bottom:1px solid rgba(15,23,42,.06)!important}.grid-stack-item-content{box-shadow:0 1px 2px rgba(15,23,42,.04),0 4px 16px rgba(15,23,42,.05)}`;
+:root{--fv-font:Inter,ui-sans-serif,system-ui,sans-serif;--fv-bg:#ffffff;--fv-surface:#ffffff;--fv-surface-2:#ffffff;--fv-surface-hover:#f6f1ea;--fv-surface-overlay:rgba(255,255,255,.96);
+--fv-panel-bg:#ffffff;--fv-panel-surface:#ffffff;--fv-border:rgba(60,40,20,.12);--fv-border-btn:rgba(60,40,20,.22);--fv-border-soft:rgba(60,40,20,.12);--fv-panel-border:transparent;
+--fv-text:#221C17;--fv-text-muted:#6B6158;--fv-text-secondary:#4B4139;--fv-text-strong:#1a1410;--fv-text-faint:#a39a90;--fv-text-hover:#221C17;
+--fv-accent:#9A2400;--fv-accent-dark:#7C1D00;--fv-accent-bg:rgba(154,36,0,.07);--fv-accent-border:rgba(154,36,0,.35);--fv-accent-text:#9A2400;--fv-accent-text-strong:#7C1D00;
+--fv-danger-bg:#fdecea;--fv-danger-border:#f5c2bd;--fv-shadow-sm:none;--fv-panel-radius:0;--fv-radius:8px;--fv-toolbar-height:0px;
+--fv-brand-image:url(/assets/wordmark-light.png);--fv-hover-color:rgba(183,121,31,.85);--fv-hover-cell-border:rgba(183,121,31,.9)}
+html,body{background:#fff!important;color-scheme:light;height:100%!important;margin:0}body{overflow:hidden!important}
+#fv-header,#fv-filter-strip,.fv-panel-bar,#fv-dashboard>.fv-dashboard-item:not(:first-child){display:none!important}
+#fv-dashboard{position:absolute!important;inset:0!important;height:auto!important;padding:0!important;gap:0!important;grid-template-rows:minmax(0,1fr)!important;grid-auto-rows:0!important;background:#fff!important}
+#fv-dashboard>.fv-dashboard-item:first-child{grid-row:1/2!important;grid-column:1/-1!important;min-height:0;padding:0!important}
+#fv-dashboard>.fv-dashboard-item:first-child fv-panel{border:0!important;box-shadow:none!important;border-radius:0!important;inset:0!important}
+.grid-stack-item-content{box-shadow:none}.gtitle{display:none!important}
+::-webkit-scrollbar{width:9px}::-webkit-scrollbar-thumb{background:#d8cfc3;border-radius:9px}
+.fvx-legend{position:absolute;z-index:25;pointer-events:none;padding:9px 11px 8px;border-radius:12px;background:rgba(255,255,255,.92);border:1px solid rgba(60,40,20,.14);box-shadow:0 2px 10px rgba(60,40,20,.08);font:13px/1.35 Inter,system-ui,sans-serif;color:#4B4139;width:164px}
+.fvx-legend .lt{font-weight:600;color:#221C17;margin-bottom:4px}.fvx-legend .bar{height:10px;border-radius:5px;border:1px solid rgba(31,41,55,.25)}
+.fvx-legend .ticks{display:flex;justify-content:space-between;color:#6B6158;font-size:12px;margin-top:2px}.fvx-legend .szs{display:flex;align-items:flex-end;gap:12px}
+.fvx-legend .sz{display:flex;align-items:center;gap:5px;color:#6B6158;font-size:12px}.fvx-legend .sz i{display:inline-block;border-radius:50%;background:#facc15;border:.7px solid rgba(31,41,55,.6)}.fvx-legend .ln{margin-top:6px;color:#6B6158;font-size:12px}
+@media (max-width:520px){.fvx-legend{width:140px;font-size:12px;padding:7px 9px}.fvx-legend .ln{display:none}}
+#fvx-tip{position:fixed;z-index:9999;pointer-events:none;display:none;max-width:340px;padding:12px 14px;border-radius:12px;background:#fff;border:1px solid rgba(60,40,20,.16);box-shadow:0 12px 32px rgba(60,40,20,.18),0 2px 6px rgba(60,40,20,.06);font:14px/1.5 Inter,system-ui,sans-serif;color:#2b241e}
+#fvx-tip .tgr{margin-top:8px;padding-top:7px;border-top:1px solid rgba(60,40,20,.1);font-size:13px;font-weight:600;color:#9A2400}
+#fvx-tip .tt{font-weight:700;font-size:16px;color:#221C17;line-height:1.3}#fvx-tip .ta{color:#6B6158;margin:2px 0 7px}
+#fvx-tip .tm{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px}#fvx-tip .tm span{padding:1px 8px;border-radius:999px;background:#f3ede4;border:1px solid rgba(60,40,20,.08);font-size:13px;color:#4B4139}
+#fvx-tip .tm .st{background:#fdf4e3;border-color:#f0d6a8;color:#7a4a00}
+#fvx-tip .tb{color:#4B4139;font-size:13.5px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}#fvx-tip .ld{color:#8a8178;font-style:italic}`;
 // ---------- table ----------
 function skelRows(){$('#toplist').innerHTML=Array(8).fill('<div class=sk style="height:52px;margin:6px 0;border-radius:11px"></div>').join('')}
 function chips(r){const c=[];const st=r.state||{};
- const vp=r.description||'';if(/zoom x/.test(vp))c.push('<span class=chip>Zoomed region</span>');else c.push('<span class=chip>Whole map</span>');
+ const vp=r.description||'';
  (vp.match(/select [^;]+/g)||[]).forEach(s=>c.push(`<span class="chip acc">${esc(s.replace('select ','').replace('∈',' ').replace('≥',' ≥ ').replace(/[\[\]']/g,''))}</span>`));
  if(focus)c.push(`<span class="chip focus">★ ${esc(focus.title)}</span>`);$('#ctx').innerHTML=c.join('')}
-function render(r){$('#cnt').textContent=fmt(r.books_in_view);
+function render(r){$('#cnt').textContent=fmt(r.books_in_view);$('#cnt2').textContent=fmt(r.books_in_view);$('#fdonen').textContent=fmt(r.books_in_view);
  const w=$('#who');w.textContent=r.by==='human'?'Last change: you':r.by==='agent'?'Last change: assistant':r.by==='external'?'Last change: API':'Default view';
  if(r.focus)focus=r.focus;if(r.highlights)setRecs(r.highlights.recs);chips(r);renderTop(r.top_rated||[])}
 const LINK_SVG='<svg width=11 height=11 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2.6 stroke-linecap=round stroke-linejoin=round aria-hidden=true><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
 function bookUrl(b){return b&&(b.url||(b.i!=null?'/go/book/'+b.i:null))}
 function bookLink(url,cls=''){return url?`<a class="bklink ${cls}" href="${esc(url)}" target=_blank rel="noopener noreferrer" title="Open the book page" aria-label="Open the book page">${LINK_SVG}</a>`:''}
 let TOP=[];function renderTop(rows){TOP=rows;window.__top=rows;
- if(!rows.length){$('#toplist').innerHTML='<div class=tempty><b>No books here</b>Zoom out or clear a filter.</div>';return}
- $('#toplist').innerHTML=rows.map((b,k)=>`<div class="bk${focus&&b.i===focus.i?' sel':''}" data-i=${b.i} title="${esc(b.title)}"><div class=rk>${k+1}</div><div style="min-width:0"><div class=t>${esc(b.title)}</div><div class=a>${esc(b.author||'')}${b.year?' · '+b.year:''}</div></div><div class=m><div class=rt><i style="background:${rateColor(b.rating||0)}"></i>${b.rating?b.rating.toFixed(2):'–'}</div><div class=c>${kfmt(b.ratings_count)} ratings</div></div>${bookLink(bookUrl(b))}</div>`).join('')}
+ if(!rows.length){$('#toplist').innerHTML='<div class=tempty><b>No books here</b>Zoom out, or press <i>Start over</i> to see every book again.</div>';return}
+ $('#toplist').innerHTML=rows.map((b,k)=>`<div class="bk${focus&&b.i===focus.i?' sel':''}" data-i=${b.i} role=button tabindex=0 aria-label="${esc(b.title)}: show on the map"><div class=rk>${k+1}</div><div style="min-width:0"><div class=t>${esc(b.title)}</div><div class=a>${esc(b.author||'Unknown author')}${b.year?' · '+b.year:''}</div></div><div class=m>${b.rating?`<div class=rt><i style="background:${rateColor(b.rating)}"></i>★ ${b.rating.toFixed(1)}</div>`:''}<div class=c>${kfmt(b.ratings_count)} ${popWord()}</div></div>${bookLink(bookUrl(b))}</div>`).join('')}
 // ---------- FlexViz bridge ----------
 async function push(ack){const s=W.flexvizState({compact:true});lastKey=JSON.stringify(s.state);
  const r=await fetch('/api/browser_state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:s.state,client_state:s.client_state,revision:s.revision,ack})}).then(r=>r.json());if(r.stale){location.reload();return}render(r);marker()}
@@ -229,12 +367,20 @@ const ML={key:null,data:null,fetching:null,down:false,tip:null,applying:false,ev
 const fmtK=n=>n==null?'–':n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(n>=1e4?0:1)+'k':''+n;
 function prog(fn){try{if(W.fvRunProgrammaticPlotlyOp&&FIGS.map)return W.fvRunProgrammaticPlotlyOp(FIGS.map,fn)}catch(e){}return fn()}
 function viewKey(gd){const L=gd._fullLayout;if(!L||!L.xaxis)return null;const r=a=>a.range.map(v=>(+v).toFixed(3)).join(',');return r(L.xaxis)+'|'+r(L.yaxis)+'|'+lastKey}
-function placeLabels(gd,labels,full){const L=gd._fullLayout,xa=L.xaxis,ya=L.yaxis,W0=L._size.w,H0=L._size.h;const fs=full?13:11.5,max=full?9:18,boxes=[],out=[];
- for(const l of labels){if(out.length>=max)break;const px=xa.l2p(l.x),py=ya.l2p(l.y);const w=l.text.length*fs*0.56+14,h=fs+10;
-  if(px-w/2<4||px+w/2>W0-4||py-h/2<4||py+h/2>H0-4)continue;const b=[px-w/2-4,py-h/2-3,px+w/2+4,py+h/2+3];
-  if(boxes.some(o=>!(b[2]<o[0]||b[0]>o[2]||b[3]<o[1]||b[1]>o[3])))continue;boxes.push(b);
-  out.push({name:'fvx-label',x:l.x,y:l.y,xref:'x',yref:'y',text:esc(l.text),showarrow:false,font:{family:'Inter',size:fs,color:'#1e1b4b'},
-   bgcolor:'rgba(255,255,255,.86)',bordercolor:'rgba(79,91,213,.22)',borderwidth:1,borderpad:3,opacity:.96,captureevents:false})}
+// Topic labels (from the server's curated topic list). Whole map: up to 24, broad topics placed first; zoomed in: up to 36.
+// Labels never overlap each other, the legend or the buttons drawn over the map; clicking one flies to that topic.
+function overBoxes(gd){const out=[],dr=gd.querySelector('.nsewdrag');if(!dr)return out;const D=dr.getBoundingClientRect(),F=$('#fv').getBoundingClientRect(),pad=6;
+ const lg=gd.querySelector('.fvx-legend');if(lg&&lg.offsetParent!==null){const G=lg.getBoundingClientRect();out.push([G.left-D.left-pad,G.top-D.top-pad,G.right-D.left+pad,G.bottom-D.top+pad])}
+ for(const el of document.querySelectorAll('#mapwrap .mctl')){if(!el.offsetParent&&getComputedStyle(el).position!=='fixed')continue;const R=el.getBoundingClientRect();if(!R.width)continue;
+  out.push([R.left-F.left-D.left-pad,R.top-F.top-D.top-pad,R.right-F.left-D.left+pad,R.bottom-F.top-D.top+pad])}
+ return out}
+function placeLabels(gd,labels,full){const L=gd._fullLayout,xa=L.xaxis,ya=L.yaxis,W0=L._size.w,H0=L._size.h;const fs=full?13:12.5,max=full?24:36,boxes=overBoxes(gd),out=[];ML.topic={};
+ for(const l of labels){if(out.length>=max)break;const px=xa.l2p(l.x),py=ya.l2p(l.y),f=l.broad?fs+1:fs-.5;const w=l.text.length*f*0.58+14,h=f+9;
+  if(px-w/2<4||px+w/2>W0-4||py-h/2<4||py+h/2>H0-4)continue;const b=[px-w/2-3,py-h/2-2,px+w/2+3,py+h/2+2];
+  if(boxes.some(o=>!(b[2]<o[0]||b[0]>o[2]||b[3]<o[1]||b[1]>o[3])))continue;boxes.push(b);const t=esc(l.text);if(l.topic)ML.topic[t]=l.topic;
+  out.push({name:'fvx-label',x:l.x,y:l.y,xref:'x',yref:'y',text:t,showarrow:false,font:{family:'Inter',size:f,color:l.broad?'#7C1D00':'#5a2a14',weight:l.broad?650:500},
+   bgcolor:'rgba(255,255,255,.92)',bordercolor:'rgba(154,36,0,.35)',borderwidth:1,borderpad:3,opacity:1,captureevents:!!l.topic,hovertext:l.topic?'Go to '+t:undefined,
+   hoverlabel:{bgcolor:'#221C17',bordercolor:'#221C17',font:{family:'Inter',size:13,color:'#fff'}}})}
  return out}
 // focused book: exact float32 position + size from the same buffer the WebGL dots use (never rounded server coords)
 function focusPt(){if(!focus)return null;if(PT.ready){if(PT.fi==null||PT.fid!==focus.i){PT.fid=focus.i;PT.fi=-1;for(let j=PT.n-1;j>=0;j--)if(PT.i[j]===focus.i){PT.fi=j;break}}
@@ -350,21 +496,28 @@ function marker(){const gd=mapDiv();if(!gd||!W.Plotly||!gd._fullLayout||!gd._ful
  const[fa]=focusAnn();const anns=gd.layout.annotations||[];const hasF=anns.some(a=>a.name==='focus');
  if(gd.data.some(t=>t.type==='heatmap'&&(t.hoverinfo!=='none'||t.showscale!==false||t.opacity!==0))||(ML.data&&ML.data.labels.length&&!anns.some(a=>a.name==='fvx-label'))||hasF!==!!fa.length||(focus&&gd.__fvxF!==focus.i)||gd.__fvxR!==(RECS.length?RECS.key+'@'+key:'')||!gd.querySelector('.fvx-legend')){gd.__fvxF=focus&&focus.i;gd.__fvxR=RECS.length?RECS.key+'@'+key:'';gd.__fvxSig=null;applyLayer(gd)}}
 // --- range sliders under the map: they read and write the ONE FlexViz state (selections on the hidden year/rating/pages/ratings figures) ---
-const SL=[{k:'year',col:'year',fig:'year',nm:'Publication year',min:1980,max:2025,step:1,f:v=>String(Math.round(v)),hint:''},
- {k:'rating',col:'rating',fig:'rating',nm:'Average rating',min:1,max:5,step:0.05,f:v=>v.toFixed(2),hint:''},
- {k:'ratings_count',col:'log10_ratings',fig:'votes',nm:'Number of ratings',min:0,max:7,step:0.05,f:v=>fmtK(Math.round(Math.pow(10,v)-1)),hint:'log scale'},
- {k:'pages',col:'pages',fig:'pages',nm:'Pages',min:0,max:1000,step:10,f:(v,hi)=>hi&&v>=1000?'1000+':String(Math.round(v)),hint:'books without a page count are hidden while set',open:true}];
+const SL=[{k:'year',col:'year',fig:'year',nm:'Year published',min:1980,max:2025,step:1,f:v=>String(Math.round(v)),hint:''},
+ {k:'rating',col:'rating',fig:'rating',nm:'Star rating',min:1,max:5,step:0.1,f:v=>'★ '+v.toFixed(1),hint:''},
+ {k:'ratings_count',col:'log10_ratings',fig:'votes',nm:'How popular',min:0,max:7,step:0.05,f:v=>fmtK(Math.round(Math.pow(10,v)-1)),hint:'Number of ratings. Slide right for well-known books.'},
+ {k:'pages',col:'pages',fig:'pages',nm:'Length',min:0,max:1000,step:10,f:(v,hi)=>hi&&v>=1000?'1000+':String(Math.round(v)),hint:'In pages. Books with an unknown length are hidden while this is set.',open:true}];
 const SLV={};let slDrag=false,slT=0,SLK=null;
+const slOn=d=>SLV[d.k][0]>d.min||SLV[d.k][1]<d.max;
 function slFill(d){const el=d.el,[a,b]=SLV[d.k],p=v=>(v-d.min)/(d.max-d.min)*100;el.querySelector('.fill').style.left=p(a)+'%';el.querySelector('.fill').style.width=(p(b)-p(a))+'%';
- const on=a>d.min||b<d.max;el.classList.toggle('on',on);el.querySelector('.v').textContent=on?d.f(a)+' – '+d.f(b,true):'any';el.querySelector('.lo').value=a;el.querySelector('.hi').value=b}
-function buildSliders(){$('#sliders').innerHTML=SL.map(d=>`<div class=sl data-k=${d.k}><div class=slh><span class=nm>${d.nm}</span><span class=v>any</span><a>reset</a></div>
- <div class=rng><div class=track><div class=fill></div></div><input type=range class=lo min=${d.min} max=${d.max} step=${d.step} value=${d.min} aria-label="${d.nm} from"><input type=range class=hi min=${d.min} max=${d.max} step=${d.step} value=${d.max} aria-label="${d.nm} to"></div><div class=hint>${d.hint}</div></div>`).join('');
+ const on=a>d.min||b<d.max;el.classList.toggle('on',on);el.querySelector('.v').textContent=on?d.f(a)+'-'+d.f(b,true):'Any';el.querySelector('.lo').value=a;el.querySelector('.hi').value=b;
+ el.querySelector('.lo').setAttribute('aria-valuetext',d.f(a));el.querySelector('.hi').setAttribute('aria-valuetext',d.f(b,true))}
+// fit the sliders to the loaded dataset (from /api/config): year range from the data, no rating slider without ratings, no pages slider without page counts
+function tuneSliders(c){const R=c.ranges||{};for(const d of SL){if(d.k==='year'&&R.year){d.min=R.year[0];d.max=R.year[1]}
+  if(d.k==='rating')d.hide=!c.has_rating;if(d.k==='pages')d.hide=R.has_pages===false;
+  if(d.k==='ratings_count'&&!c.has_rating&&/download/i.test(c.attribution||''))d.hint='Number of downloads. Slide right for well-known books.'}buildSliders()}
+function buildSliders(){$('#sliders').innerHTML=SL.map(d=>`<div class=sl data-k=${d.k}${d.hide?' hidden':''}><div class=slh><span class=nm>${d.nm}</span><span class=v>Any</span></div>
+ <div class=rng><div class=track><div class=fill></div></div><input type=range class=lo min=${d.min} max=${d.max} step=${d.step} value=${d.min} aria-label="${d.nm}: from"><input type=range class=hi min=${d.min} max=${d.max} step=${d.step} value=${d.max} aria-label="${d.nm}: to"></div><div class=hint><span>${d.hint}</span><button type=button class=linkbtn aria-label="Clear ${d.nm}">Clear</button></div></div>`).join('');
  for(const d of SL){d.el=document.querySelector(`.sl[data-k=${d.k}]`);SLV[d.k]=[d.min,d.max];const lo=d.el.querySelector('.lo'),hi=d.el.querySelector('.hi');
-  const inp=w=>{let a=+lo.value,b=+hi.value;if(a>b){if(w==='lo')a=b;else b=a}SLV[d.k]=[a,b];slFill(d);slDrag=true;clearTimeout(slT);slT=setTimeout(writeFilters,220)};
+  const inp=w=>{let a=+lo.value,b=+hi.value;if(a>b){if(w==='lo')a=b;else b=a}SLV[d.k]=[a,b];slFill(d);slSummary();slDrag=true;clearTimeout(slT);slT=setTimeout(writeFilters,220)};
   lo.oninput=()=>inp('lo');hi.oninput=()=>inp('hi');lo.onchange=hi.onchange=()=>{clearTimeout(slT);writeFilters()};
-  d.el.querySelector('.slh a').onclick=()=>{SLV[d.k]=[d.min,d.max];slFill(d);writeFilters()};slFill(d)}
+  d.el.querySelector('.hint button').onclick=()=>{SLV[d.k]=[d.min,d.max];slFill(d);writeFilters()};slFill(d)}
  $('#freset').onclick=()=>{for(const d of SL){SLV[d.k]=[d.min,d.max];slFill(d)}writeFilters()};slSummary()}
-function slSummary(){const on=SL.filter(d=>SLV[d.k][0]>d.min||SLV[d.k][1]<d.max);$('#fsum').textContent=on.length?on.map(d=>d.nm.toLowerCase()+' '+d.f(SLV[d.k][0])+'–'+d.f(SLV[d.k][1],true)).join(' · '):'none — all books'}
+function slSummary(){const on=SL.filter(d=>!d.hide&&slOn(d));$('#fsum').textContent=on.length?on.map(d=>d.nm+': '+d.f(SLV[d.k][0])+' to '+d.f(SLV[d.k][1],true)).join(' · '):'Showing all books';
+ $('#filters').classList.toggle('on',!!on.length);$('#freset').disabled=!on.length;$('#fbtn').classList.toggle('on',!!on.length);$('#fcount').textContent=on.length;$('#fbtn').setAttribute('aria-label',on.length?`Filters, ${on.length} on`:'Filters')}
 async function writeFilters(){if(!W)return;slDrag=false;slSummary();const cur=W.flexvizState({compact:true}).state||{};const cols=new Set(SL.map(d=>d.col));
  const keep=(cur.selections||[]).filter(s=>!(s.predicates||[]).some(p=>(p.clauses||[]).some(c=>cols.has(c.column))));const sels=[...keep];
  for(const d of SL){let[a,b]=SLV[d.k];if(a<=d.min&&b>=d.max)continue;if(d.open&&b>=d.max)b=1e6;if(d.k==='rating'&&a<=d.min)a=0;sels.push({source_figure_uid:FIGS[d.fig],predicates:[{clauses:[{column:d.col,range:[a,b]}]}]})}
@@ -379,8 +532,8 @@ function dotSize(n){return 2.5+1.5*Math.log10((n||0)+1)}
 function legend(gd){let L=gd.querySelector('.fvx-legend');if(!L){L=W.document.createElement('div');L.className='fvx-legend';
   const grad='linear-gradient(90deg,'+[1,1.5,2,2.5,3,3.5,4,4.5,5].map(v=>rateColor(v)+' '+((v-1)/4*100)+'%').join(',')+')';
   const circ=[[100,'100'],[1e4,'10k'],[1e6,'1M']].map(([n,t])=>{const d=dotSize(n);return`<span class=sz><i style="width:${d}px;height:${d}px"></i>${t}</span>`}).join('');
-  L.innerHTML=`<div class=lt>Avg rating</div><div class=bar style="background:${grad}"></div><div class=ticks><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
-   <div class=lt style="margin-top:6px">Number of ratings</div><div class=szs>${circ}</div><div class=ln>Every book is one dot</div>`;
+  L.innerHTML=(CFG.has_rating?`<div class=lt>Colour: star rating</div><div class=bar style="background:${grad}"></div><div class=ticks><span>1★</span><span>2</span><span>3</span><span>4</span><span>5★</span></div>
+   <div class=lt style="margin-top:7px">`:`<div class=lt>`)+`Size: how popular</div><div class=szs>${circ}</div><div class=ln>Each dot is one book</div>`;
   if(W.getComputedStyle(gd).position==='static')gd.style.position='relative';gd.appendChild(L)}
  const S=gd._fullLayout._size;L.style.left=(S.l+8)+'px';L.style.top=(S.t+S.h-L.offsetHeight-8)+'px'}
 // --- tooltip ---
@@ -392,55 +545,100 @@ function setCur(on){const dr=mapDiv()&&mapDiv().querySelector('.nsewdrag');if(dr
 function bookTip(j,ev){const i=PT.i[j],b=BK[i];const lab=c=>(c||'').split(' ').slice(1).join(' ').replace(/-/g,' ');
  const t=b||{title:null,author:null,year:PT.year[j]>=0?PT.year[j]:null,rating:PT.rating[j]?(PT.rating[j]/1000).toFixed(2):null,ratings_count:PT.cnt[j],genre:PT.meta.genres[PT.genre[j]],label:lab(PT.meta.clusters[PT.cluster[j]])};
  showTip(`<div class=tt>${t.title?esc(t.title):'<span class=ld>Loading…</span>'}</div><div class=ta>${esc(t.author||(b?'Unknown author':''))}${t.year?' · '+t.year:''}${t.pages?' · '+t.pages+' pages':''}</div>
-  <div class=tm><span class=st style="border-color:${t.rating?rateColor(+t.rating):'#ddd'}">★ ${t.rating??'–'}</span><span>${fmtK(t.ratings_count)} ratings</span></div>
-  <div class=tb>${b?esc(b.blurb||'No description available.'):'<span class=ld>Loading description…</span>'}</div><div class=tgr><b>↗</b> Click to open the book page</div>`,ev);
+  <div class=tm>${t.rating?`<span class=st>★ ${(+t.rating).toFixed(1)}</span>`:''}<span>${fmtK(t.ratings_count)} ${popWord()}</span></div>
+  <div class=tb>${b?esc(b.blurb||'No description available.'):'<span class=ld>Loading description…</span>'}</div><div class=tgr>Click the dot for details</div>`,ev);
  ML.tip='b'+i;if(!b&&!BK['_'+i]){BK['_'+i]=1;fetch('/api/book/'+i).then(r=>r.json()).then(r=>{BK[i]=r;if(ML.tip==='b'+i&&ML.ev)bookTip(j,ML.ev)})}}
 function pickDot(gd,px,py){const L=gd._fullLayout,xa=L.xaxis,ya=L.yaxis,S=L._size,g=PT.grid,zs=GL.zs||1;
  const fp=focusPt();for(const j of RECS.map(r=>(recDot(r),r.__j)).concat(fp?[fp.j]:[]))if(j!=null&&j>=0&&PT.mask[j]&&Math.hypot(xa.l2p(PT.x[j])-px,ya.l2p(PT.y[j])-py)<=focusSize(PT.votes[j])/2+5)return j;   // a ringed (recommended / focused) book wins inside its ring
- const sx=Math.abs(xa.range[1]-xa.range[0])/S.w,sy=Math.abs(ya.range[1]-ya.range[0])/S.h,xv=xa.p2l(px),yv=ya.p2l(py),R=Math.max(6,(2.5+1.5*6.5)*zs/2+2);
+ const sx=Math.abs(xa.range[1]-xa.range[0])/S.w,sy=Math.abs(ya.range[1]-ya.range[0])/S.h,xv=xa.p2l(px),yv=ya.p2l(py),R=Math.max(ML.touch?20:6,(2.5+1.5*6.5)*zs/2+2);
  const cx0=Math.max(0,((xv-R*sx-g.x0)*g.sx)|0),cx1=Math.min(g.G-1,((xv+R*sx-g.x0)*g.sx)|0),cy0=Math.max(0,((yv-R*sy-g.y0)*g.sy)|0),cy1=Math.min(g.G-1,((yv+R*sy-g.y0)*g.sy)|0);
  let inside=-1,near=-1,nd=R;for(let cy=cy0;cy<=cy1;cy++)for(let cx=cx0;cx<=cx1;cx++){const c=cy*g.G+cx;for(let q=g.start[c];q<g.start[c+1];q++){const j=g.idx[q];if(!PT.mask[j])continue;
   const dx=(PT.x[j]-xv)/sx,dy=(PT.y[j]-yv)/sy,d=Math.sqrt(dx*dx+dy*dy);const r=Math.max(1,(2.5+1.5*PT.votes[j]/1000)*zs)/2;if(d<=r+1){if(j>inside)inside=j}else if(d<nd){nd=d;near=j}}}
  return inside>=0?inside:near}
 function onMove(gd,ev){if(ML.down||!PT.ready)return hideTip();ML.ev=ev;const dr=gd.querySelector('.nsewdrag');if(!dr)return;const Rr=dr.getBoundingClientRect();const px=ev.clientX-Rr.left,py=ev.clientY-Rr.top;
  if(px<0||py<0||px>Rr.width||py>Rr.height)return hideTip();const j=pickDot(gd,px,py);if(j<0)return hideTip();ML.hj=j;setCur(true);bookTip(j,ev)}
+// Clicks and taps use pointer events so mouse, pen and touch behave the same: a short press on a dot opens the book card.
+// Mouse clicks wait 260ms so a double-click (which resets the zoom) doesn't also open the card.
 function bindMap(gd){if(gd.__fvxBound)return;gd.__fvxBound=true;let raf=0;
- gd.addEventListener('mousemove',ev=>{ML.ev=ev;if(!raf)raf=W.requestAnimationFrame(()=>{raf=0;onMove(gd,ML.ev)})});gd.addEventListener('mouseleave',hideTip);
- gd.addEventListener('mousedown',ev=>{const hj=ML.hj;ML.down=true;hideTip();clearTimeout(ML.clk);ML.press=(ev.button===0&&!ev.shiftKey&&!ev.ctrlKey&&!ev.metaKey&&!ev.altKey&&hj>=0)?{x:ev.clientX,y:ev.clientY,t:performance.now(),j:hj,n:(ML.press&&performance.now()-ML.press.t<400)?2:1}:null});
- W.addEventListener('mouseup',ev=>{const p=ML.press;ML.press=null;if(p&&p.done)return;if(!p||p.n>1)return;const moved=Math.hypot(ev.clientX-p.x,ev.clientY-p.y);if(moved>4||performance.now()-p.t>600)return;
-  const dr=gd.querySelector('.nsewdrag');if(!dr)return;const R=dr.getBoundingClientRect();if(pickDot(gd,ev.clientX-R.left,ev.clientY-R.top)!==p.j)return;
-  const i=PT.i[p.j];ML.clk=setTimeout(()=>openBook(i),260)},true);
+ gd.addEventListener('mousemove',ev=>{if(ML.touch)return;if(ev.target.closest&&ev.target.closest('.annotation'))return hideTip();ML.ev=ev;if(!raf)raf=W.requestAnimationFrame(()=>{raf=0;onMove(gd,ML.ev)})});gd.addEventListener('mouseleave',hideTip);
+ gd.addEventListener('pointerdown',ev=>{ML.touch=ev.pointerType!=='mouse';if(ev.target.closest&&ev.target.closest('.annotation')){ML.press=null;return}ML.down=true;hideTip();clearTimeout(ML.clk);const now=performance.now();
+  ML.press=(ev.isPrimary&&ev.button===0&&!ev.shiftKey&&!ev.ctrlKey&&!ev.metaKey&&!ev.altKey)?{x:ev.clientX,y:ev.clientY,t:now,n:(ML.last&&now-ML.last<400)?2:1}:null;ML.last=now},true);
+ W.addEventListener('pointerup',ev=>{ML.down=false;const p=ML.press;ML.press=null;if(!p||p.n>1||!PT.ready)return;
+  if(Math.hypot(ev.clientX-p.x,ev.clientY-p.y)>(ML.touch?12:4)||performance.now()-p.t>(ML.touch?900:600))return;
+  const dr=gd.querySelector('.nsewdrag');if(!dr)return;const R=dr.getBoundingClientRect(),px=ev.clientX-R.left,py=ev.clientY-R.top;if(px<0||py<0||px>R.width||py>R.height)return;
+  const j=pickDot(gd,px,py);ML.clk=setTimeout(()=>j<0?hideCard():showCard(PT.i[j]),ML.touch?0:260)},true);
+ W.addEventListener('pointercancel',()=>{ML.down=false;ML.press=null},true);
  gd.addEventListener('dblclick',()=>clearTimeout(ML.clk),true);W.addEventListener('mouseup',()=>{ML.down=false});gd.addEventListener('wheel',hideTip,{passive:true});
- gd.on&&gd.on('plotly_afterplot',()=>setTimeout(marker,0));gd.on&&gd.on('plotly_relayouting',()=>{if(PT.ready&&glEnsure(gd))draw(gd)})}
+ gd.on&&gd.on('plotly_afterplot',()=>setTimeout(marker,0));gd.on&&gd.on('plotly_relayouting',()=>{if(PT.ready&&glEnsure(gd))draw(gd)});
+ gd.on&&gd.on('plotly_clickannotation',e=>{const t=ML.topic&&ML.topic[e.annotation&&e.annotation.text];if(t)goTopic(t)})}
 function openBook(i){const b=BK[i];const u=(b&&b.url)||('/go/book/'+i);window.__bookOpened=(window.__bookOpened||[]).concat([{i,url:u,title:b&&b.title}]);window.open(u,'_blank','noopener,noreferrer')}
-function setSync(ok,txt){const s=$('#sync');s.querySelector('.dot').className='dot'+(ok?' live':'');s.lastChild.textContent=txt}
+// --- book card: what you see after clicking or tapping a dot ---
+const X_SVG='<svg width=20 height=20 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2.6 stroke-linecap=round aria-hidden=true><path d="M6 6l12 12M18 6 6 18"/></svg>';
+async function showCard(i){hideTip();const c=$('#bookcard');c.dataset.i=i;c.hidden=false;let b=BK[i];
+ if(!b){c.innerHTML='<div class=empty>Loading…</div>';try{b=BK[i]=await fetch('/api/book/'+i).then(r=>r.json())}catch(e){c.innerHTML=`<button class=x aria-label=Close>${X_SVG}</button><div class=empty>Sorry, this book could not be loaded.</div>`;c.querySelector('.x').onclick=hideCard;return}
+  if(c.dataset.i!=String(i)||c.hidden)return}
+ const facts=[b.year?`<span>${b.year}</span>`:'',b.rating?`<span class=st>★ ${(+b.rating).toFixed(1)}</span>`:'',b.ratings_count?`<span>${fmtK(b.ratings_count)} ${popWord()}</span>`:'',b.pages?`<span>${b.pages} pages</span>`:''].join('');
+ c.innerHTML=`<button class=x aria-label="Close">${X_SVG}</button><h3 id=bc-title>${esc(b.title)}</h3><div class=by>by ${esc(b.author||'unknown author')}</div>${facts?`<div class=facts>${facts}</div>`:''}
+  <p>${esc(b.blurb||'No description available.')}</p><div class=acts><button type=button class="btn pri" data-a=open>Open book page <svg width=16 height=16 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2.6 stroke-linecap=round stroke-linejoin=round aria-hidden=true><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></button><button type=button class=btn data-a=like>More like this</button></div>`;
+ c.querySelector('.x').onclick=hideCard;c.querySelector('[data-a=open]').onclick=()=>openBook(i);
+ c.querySelector('[data-a=like]').onclick=()=>{hideCard();ask('Books like '+b.title)};c.querySelector('.x').focus({preventScroll:true})}
+function hideCard(){const c=$('#bookcard');if(!c.hidden){c.hidden=true;c.innerHTML=''}}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){hideCard();openFilters(false)}});
+function setSync(ok,txt){const s=$('#sync');s.classList.toggle('bad',!ok);s.querySelector('.dot').className='dot'+(ok?' live':'');s.lastChild.textContent=ok?txt:'Reconnecting to Atlas…'}
 function sse(){const es=new EventSource('/api/events');es.onopen=()=>setSync(true,'Live · synced');es.onerror=()=>setSync(false,'Reconnecting…');
  es.onmessage=async e=>{const m=JSON.parse(e.data);if(m.type==='hello'&&m.boot){if(window.__boot&&window.__boot!==m.boot){location.reload();return}window.__boot=m.boot}if(m.type==='apply'&&W)await applyPatch(m.patch,m.id);
   if(m.type==='recs')setRecs(m.books);if(m.type==='hello'&&m.recs)setRecs(m.recs);
   if(m.type==='focus'){focus=m.book;marker();document.querySelectorAll('#toplist .bk').forEach(t=>t.classList.toggle('sel',!!focus&&+t.dataset.i===focus.i))}}}
-function sizeMap(){const st=$('#stage'),mw=$('#mapwrap');const h=st.clientHeight-$('#filters').offsetHeight-72;mw.style.height=Math.max(260,h)+'px'}
-function fitMap(){try{const d=W&&W.document.getElementById('fv-dashboard');if(!d)return;const b=Math.ceil(d.getBoundingClientRect().bottom)+6;const mw=$('#mapwrap');if(b>120&&b<mw.clientHeight)mw.style.height=b+'px'}catch(e){}}
-async function boot(){skelRows();sizeMap();const st=$('#mapwrap');const c=await fetch('/api/config?h='+Math.round(st.clientHeight)).then(r=>r.json());FIGS=c.figures;if(c.total){const sb=document.getElementById('subtitle');if(sb)sb.textContent=c.subtitle||(c.total.toLocaleString('en-US')+' books · mapped by description');}
- loadModels();
+// --- map controls (outside the iframe): zoom buttons and what a drag does. They drive the same shared state as Atlas AI. ---
+function setMode(m){document.querySelectorAll('#modectl button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===m)));
+ try{const want=m==='pan'?'Pan':'Zoom';const b=[...W.document.querySelectorAll('.fv-mode-btn')].find(x=>x.textContent.trim()===want);if(b&&!b.classList.contains('mode-active'))b.click()}catch(e){}}
+document.querySelectorAll('#modectl button').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
+// topics: the "Jump to" row and the labels on the map both fly to where a topic's books concentrate
+function goTopic(t){hideCard();if(isNarrow())setTab('map');tool('zoom_to_topic',{topic:t})}
+async function loadTopics(){try{const d=await fetch('/api/map/overlay?points=0&x0=-1e9&x1=1e9&y0=-1e9&y1=1e9').then(r=>r.json());let L=d.labels||[];
+ if(L.some(l=>l.broad))L=L.filter(l=>l.broad);L=L.slice(0,10);if(!L.length)return;
+ $('#tchips').innerHTML=L.map(l=>`<button type=button data-t="${esc(l.topic)}">${esc(l.text)}</button>`).join('');$('#topicbar').hidden=false;
+ $('#tchips').onclick=e=>{const b=e.target.closest('button');if(b)goTopic(b.dataset.t)}}catch(e){}}
+$('#zin').onclick=()=>{hideCard();tool('zoom',{factor:2})};$('#zout').onclick=()=>{hideCard();tool('zoom',{factor:0.5})};$('#zall').onclick=()=>{hideCard();tool('set_view',{reset:true})};
+let rzT=0;function resizeMap(){clearTimeout(rzT);rzT=setTimeout(()=>{const gd=mapDiv();if(gd&&W.Plotly){prog(()=>W.Plotly.Plots.resize(gd));GL.dk=null;setTimeout(marker,50)}},120)}
+addEventListener('resize',resizeMap);
+// --- filters: inline on large screens, a slide-up sheet on phones and tablets ---
+function openFilters(on){const f=$('#filters');if(on&&!isNarrow())return;f.classList.toggle('open',on);$('#scrim').classList.toggle('on',on);$('#fbtn').setAttribute('aria-expanded',String(on));if(on)setTimeout(()=>f.querySelector('.sl:not([hidden]) input')?.focus({preventScroll:true}),260)}
+$('#fbtn').onclick=()=>{hideCard();openFilters(true)};$('#fdone').onclick=$('#scrim').onclick=()=>openFilters(false);
+async function boot(){skelRows();const c=await fetch('/api/config?h='+Math.round($('#mapwrap').clientHeight||600)).then(r=>r.json());CFG=c;FIGS=c.figures;tuneSliders(c);
+ if(c.total){const sb=document.getElementById('subtitle');if(sb)sb.textContent=c.subtitle||(c.total.toLocaleString('en-US')+' books, mapped by what they are about')}
+ if(!c.has_rating)$('.toph').textContent="The most popular books in the part of the map you're looking at. Tap a book to see it on the map.";
+ loadModels();loadTopics();
  const f=$('#fv');f.onload=async()=>{const w=f.contentWindow;try{w.open=()=>null}catch(e){}
   const base=w.document.createElement('link');base.rel='stylesheet';base.href='/assets/fv-light.css';w.document.head.appendChild(base);const css=w.document.createElement('style');css.textContent=FVCSS;w.document.head.appendChild(css);
   for(let k=0;k<200&&typeof w.flexvizState!=='function';k++)await new Promise(r=>setTimeout(r,100));
   for(let k=0;k<150&&!mapDiv.call(null,W=w);k++)await new Promise(r=>setTimeout(r,100));
-  W=w;loadPoints();const s=await fetch('/api/state').then(r=>r.json());await applyPatch({state:s.state},'restore');f.classList.add('ready');$('#skel').classList.add('gone');fitMap();setTimeout(fitMap,600);window.__fvReady=true;poll();sse()};f.src=c.dash_url}
+  W=w;loadPoints();const s=await fetch('/api/state').then(r=>r.json());await applyPatch({state:s.state},'restore');setMode('pan');resizeMap();f.classList.add('ready');$('#skel').classList.add('gone');window.__fvReady=true;poll();sse()};f.src=c.dash_url}
 // ---------- search ----------
 let acT,acR=[],acI=-1;$('#sq').oninput=e=>{clearTimeout(acT);const v=e.target.value.trim();if(v.length<2){$('#ac').style.display='none';return}
  acT=setTimeout(async()=>{acR=await fetch('/api/search?q='+encodeURIComponent(v)+'&limit=7').then(r=>r.json());acI=-1;
-  $('#ac').innerHTML=acR.map((b,k)=>`<div data-k=${k}><b>${esc(b.title)}</b><span>${esc(b.author||'')} · ${b.year??''}</span></div>`).join('')||'<div><span>No matches</span></div>';$('#ac').style.display='block'},140)};
+  $('#ac').innerHTML=acR.map((b,k)=>`<div data-k=${k} role=option><b>${esc(b.title)}</b><span>${esc(b.author||'Unknown author')}${b.year?' · '+b.year:''}</span></div>`).join('')||'<div><span>No books found with that name. Try fewer words, or ask Atlas.</span></div>';$('#ac').style.display='block'},140)};
 $('#sq').onkeydown=e=>{const n=acR.length;if(e.key==='ArrowDown'){acI=(acI+1)%n;hl()}else if(e.key==='ArrowUp'){acI=(acI-1+n)%n;hl()}else if(e.key==='Enter'&&n){pick(acR[Math.max(acI,0)])}else if(e.key==='Escape')$('#ac').style.display='none'};
 function hl(){document.querySelectorAll('#ac div').forEach((d,k)=>d.classList.toggle('on',k===acI))}
 $('#ac').onmousedown=e=>{const d=e.target.closest('[data-k]');if(d)pick(acR[+d.dataset.k])};
-function pick(b){$('#ac').style.display='none';$('#sq').value=b.title;tool('focus_book',{i:b.i})}
+function pick(b){$('#ac').style.display='none';$('#sq').value=b.title;$('#sq').blur();flyTo(b.i)}
+// fly the map to a book and open its card (on phones this also switches to the map screen)
+function flyTo(i){if(isNarrow())setTab('map');tool('focus_book',{i});showCard(i)}
+document.addEventListener('click',e=>{if(!e.target.closest('.search'))$('#ac').style.display='none'});
 function tool(n,a){return fetch('/api/tools/'+n,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(a)}).then(r=>r.json())}
-$('#toplist').onclick=e=>{if(e.target.closest('a.bklink'))return;const c=e.target.closest('.bk');if(c){document.querySelectorAll('#toplist .bk').forEach(t=>t.classList.toggle('sel',t===c));tool('focus_book',{i:+c.dataset.i})}};
-$('#bReset').onclick=async()=>{focus=null;await tool('set_filters',{clear:true});await tool('set_view',{reset:true})};
+$('#toplist').onclick=e=>{if(e.target.closest('a.bklink'))return;const c=e.target.closest('.bk');if(c){document.querySelectorAll('#toplist .bk').forEach(t=>t.classList.toggle('sel',t===c));flyTo(+c.dataset.i)}};
+$('#toplist').onkeydown=e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('.bk')){e.preventDefault();e.target.click()}};
+$('#bReset').onclick=async()=>{focus=null;hideCard();$('#sq').value='';await tool('set_filters',{clear:true});await tool('set_view',{reset:true})};
 // ---------- chat ----------
-const SUG=["Books like {{EX_TITLE}}","Recommend me something from here","{{EX_FILTER_CAP}}","What's in view?","{{EX_PAGES_CAP}}","Zoom out"];
-$('#sugg').innerHTML=SUG.map(s=>`<button>${esc(s)}</button>`).join('');$('#sugg').onclick=e=>{if(e.target.tagName==='BUTTON'){$('#q').value=e.target.textContent;$('#f').requestSubmit()}};
+const SUG=["Books like {{EX_TITLE}}","{{EX_FILTER_CAP}}","{{EX_PAGES_CAP}}","Zoom out"];
+$('#sugg').innerHTML='<button type=button class=pickbtn data-wiz=1>★ Help me pick a book</button>'+SUG.map(s=>`<button type=button>${esc(s)}</button>`).join('');
+$('#wsugg').innerHTML=SUG.map(s=>`<button type=button>${esc(s)}</button>`).join('');$('#wsugg').onclick=e=>{const b=e.target.closest('button');if(b)ask(b.textContent)};
+$('#sugg').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.wiz)pickBook();else ask(b.textContent)};
+$('#wizgo').onclick=pickBook;
+// the guided recommendation: a few multiple-choice questions about the books on the map, then a top 3
+function pickBook(){if(thinking)return;setTab('lib');add('u','<div class=bub>Help me pick a book</div>');startWizard('',true)}
+// send a message as if typed (used by suggestion buttons and the book card's "More like this")
+function ask(t){setTab('lib');$('#q').value=t;$('#f').requestSubmit()}
 function md(t){const L=esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/(^|\W)\*(\S[^*]*?)\*(?=\W|$)/g,'$1<i>$2</i>').split(/\n/);let h='',ul=false;
  for(const l of L){const m=l.match(/^\s*(?:[-•*]|\d+[.)])\s+(.*)/);if(m){if(!ul){h+='<ul>';ul=true}h+=`<li>${m[1]}</li>`}else{if(ul){h+='</ul>';ul=false}if(l.trim())h+=`<p>${l}</p>`}}return h+(ul?'</ul>':'')}
 function chipText(c){const a=c.args||{};const L=v=>(Array.isArray(v)?v.join(', '):v);
@@ -455,12 +653,12 @@ $('#f').onsubmit=async e=>{e.preventDefault();const t=$('#q').value.trim();if(!t
  let r;try{r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:msgs})}).then(r=>r.json())}catch(err){r={reply:'Something went wrong. Please try again.',tool_calls:[]}}
  clearInterval(tick);const secs=((performance.now()-t0)/1000).toFixed(1);const reply=r.reply||'(no answer)';const isHtml=/<b>|<br>/.test(reply);
  d.innerHTML=((r.tool_calls||[]).length?`<div class=tools>${r.tool_calls.map(c=>`<span class="tc${c.error?' err':''}" title="${esc(c.tool+' '+JSON.stringify(c.args))}">${c.error?'⚠':'✓'} ${esc(chipText(c))}</span>`).join('')}</div>`:'')+
-  `<div class=bub>${isHtml?reply:md(reply).replace(/<p><b>Map updated:<\/b>([\s\S]*?)<\/p>/,'<span class=mapchg><b>Map updated:</b>$1</span>')}</div><div class=meta>${secs}s · ${r.via==='rules'?'map command':esc(r.model||'')}</div>`;
+  `<div class=bub>${isHtml?reply:md(reply).replace(/<p><b>Map updated:<\/b>([\s\S]*?)<\/p>/,'<span class=mapchg><b>Map updated:</b>$1</span>')}</div>${(r.tool_calls||[]).length?'<button type=button class="btn seemap">See it on the map</button>':''}<div class=meta>${secs}s${r.via==='rules'||!r.model?'':' · '+esc(r.model)}</div>`;d.querySelector('.seemap')?.addEventListener('click',()=>setTab('map'));
  linkMentions(d,r.links||{});msgs.push({role:'assistant',content:reply.replace(/<[^>]+>/g,' ')});$('#sugg').style.display='flex';$('#log').scrollTop=1e9;thinking=false;$('#send').disabled=false;window.__lastReply=Object.assign(r,{secs:+secs});if(r.wizard)startWizard(r.wizard,true)};
 
 // ---------- Librarian model picker ----------
 const MS={st:null};
-function mstat(cls,txt,title){const b=$('#mstat');b.className='mstat '+(cls||'');b.querySelector('.mtx').textContent=txt;b.title=title||'Test the connection'}
+function mstat(cls,txt,title){const b=$('#mstat');b.className='mstat '+(cls||'');b.querySelector('.mtx').textContent=txt;b.title=title||'Test the connection';const s=MS.st&&MS.st.current;$('#advsum').textContent=s&&s.model?'· '+s.model:''}
 function hostOf(u){try{return new URL(u).host}catch(e){return u}}
 function fillModels(st){MS.st=st;const c=st.current,ms=st.ollama.models||[];let h='';
  if(ms.length){h+=`<optgroup label="On this computer (Ollama)">`+ms.map(m=>`<option value="ollama:${esc(m.name)}">${esc(m.name)}${m.params?' · '+esc(m.params):''}${m.name===st.default_local?' · default':''}</option>`).join('')+'</optgroup>'}
@@ -495,26 +693,30 @@ async function recCall(url,body,text){wbusy(true);const w=waitCard(text);let r;t
  const secs=w.done();wbusy(false);r.secs=secs;(window.__recLog=window.__recLog||[]).push({step:r.final?'final':(r.question?'q'+r.round:'error'),secs:+secs.toFixed(1)});return r}
 function renderRec(r){window.__rec=r;
  if(r.error){add('b',`<div class=bub>${esc(r.error)}</div>`);wiz=null;return}
- if(r.question){const q=r.question;const d=add('b wiz',`<div class=bub><div class=wstep>Question ${r.round} · ${r.remaining} of ${r.candidates} books left</div><div class=wq>${esc(q.text)}</div>
-  <div class=opts>${q.options.map(o=>`<button class=opt data-id=${o.id}>${esc(o.label)}<span>${o.count} book${o.count==1?'':'s'}</span></button>`).join('')}</div>
-  <div class=wfoot><span>${r.candidates} best-rated of ${r.in_view.toLocaleString()} in view${q.source=='fallback'?' · quick question':''}</span><a class=stop>Stop</a></div></div>`);
+ if(r.question){const q=r.question;const d=add('b wiz',`<div class=bub><div class=wstep>Question ${r.round}</div><div class=wq>${esc(q.text)}</div>
+  <div class=opts>${q.options.map(o=>`<button class=opt data-id=${o.id}>${esc(o.label.charAt(0).toUpperCase()+o.label.slice(1))}<span>${o.count} book${o.count==1?'':'s'}</span></button>`).join('')}</div>
+  <div class=wfoot><span>Choosing from the ${r.candidates} best books on the map</span><button type=button class=stop>Stop</button></div></div>`);
   d.querySelectorAll('.opt').forEach(b=>b.onclick=async()=>{if(thinking)return;d.querySelectorAll('.opt').forEach(x=>x.disabled=true);b.classList.add('on');d.querySelector('.stop')?.remove();
    renderRec(await recCall('/api/rec/answer',{session:r.session,option:+b.dataset.id},'Narrowing down…'))});
-  d.querySelector('.stop').onclick=()=>{d.querySelectorAll('.opt').forEach(x=>x.disabled=true);d.querySelector('.stop').remove();wiz=null;add('b',`<div class=bub>Okay, stopped. Ask me again any time, or switch to <b>Find me a book</b>.</div>`)};return}
+  d.querySelector('.stop').onclick=()=>{d.querySelectorAll('.opt').forEach(x=>x.disabled=true);d.querySelector('.stop').remove();wiz=null;add('b',`<div class=bub>Okay, stopped. Ask me again any time, or press <b>Help me pick a book</b>.</div>`)};return}
  if(r.final){const f=r.final;const tot=(r.timings||[]).reduce((a,t)=>a+t.secs,0);
-  const fd=add('b wiz',`<div class=bub><div class=wstep>Your top 3</div><div class=wq>${f.query?'For “'+esc(f.query)+'” · ':''}From ${r.in_view.toLocaleString()} books in view → ${r.candidates} candidates → ${f.finalists.length} finalists</div>
+  const fd=add('b wiz',`<div class=bub><div class=wstep>Your top 3</div><div class=wq>${f.query?'For “'+esc(f.query)+'”: here':'Here'} are my ${f.top3.length} picks for you</div>
   <div class=top3>${f.top3.map(b=>`<div class=pick><div class=n>${b.rank}</div><div><div class=tt data-t="${esc(b.title)}" data-i=${b.i}>${esc(b.title)}</div>${bookLink(bookUrl(b),'inl')}
-   <div class=mt>${esc(b.author||'')} · ${b.year||'?'} · <span class=star>★</span> ${b.rating??'–'} (${fmtN(b.ratings_count)} ratings)${b.pages?' · '+b.pages+' pages':''}</div>
+   <div class=mt>${esc(b.author||'Unknown author')}${b.year?' · '+b.year:''}${b.rating?` · <span class=star>★</span> ${(+b.rating).toFixed(1)}`:''} · ${fmtN(b.ratings_count)} ${popWord()}${b.pages?' · '+b.pages+' pages':''}</div>
    <p>${esc(b.summary)}</p><div class=why><b>Why:</b> ${esc(b.reason)}</div></div></div>`).join('')}</div>
-  <div class=wfoot><span>${f.answers.length} question${f.answers.length==1?'':'s'} · ${tot.toFixed(0)}s · ${esc(f.source=='llm'?r.model:f.source=='fallback'?'rule-based':r.model+' + rules')}</span><span>Click a title to show it on the map</span></div></div>`);fd.querySelectorAll('.tt').forEach(t=>t.onclick=()=>fetch('/api/tools/focus_book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({i:+t.dataset.i})}));
+  <div class=wfoot><span>Tap a title to see it on the map. Want different picks? Press <b>Help me pick a book</b> again.</span><span title="${f.answers.length} question${f.answers.length==1?'':'s'} · ${tot.toFixed(0)}s · ${esc(f.source=='llm'?r.model:f.source=='fallback'?'rule-based':r.model+' + rules')}">${tot.toFixed(0)}s</span></div></div>`);fd.querySelectorAll('.tt').forEach(t=>{t.tabIndex=0;t.setAttribute('role','button');t.onclick=()=>flyTo(+t.dataset.i);t.onkeydown=e=>{if(e.key==='Enter')flyTo(+t.dataset.i)}});
   $('#log').scrollTop=fd.offsetTop-$('#log').offsetTop-8;wiz=null;window.__recDone=true}}
 async function startWizard(query,noEcho){if(thinking)return;wiz=true;document.querySelectorAll('.opt:not(.on)').forEach(x=>x.disabled=true);document.querySelectorAll('.wfoot .stop').forEach(x=>x.remove());window.__recDone=false;$('#welcome')?.remove();
  if(!noEcho)add('u',`<div class=bub>${esc(query)}</div>`);renderRec(await recCall('/api/rec/start',{query},`Reading the ${$('#cnt').textContent} books in view…`))}
 
-function setTab(t){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id==='p-'+t));
- $('aside').classList.toggle('notlib',t!=='lib');if(t==='lib')setTimeout(()=>$('#q').focus(),60);if(t==='prof'&&!PROF.loaded)loadProfile();window.__tab=t}
+// 'map' only matters on phones/tablets, where the map and each panel take turns filling the screen (bottom tab bar)
+function setTab(t,user){document.body.dataset.view=t;
+ document.querySelectorAll('#bnav button').forEach(b=>{if(b.dataset.go===t)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
+ if(t==='map'){openFilters(false);window.__tab=t;return}hideCard();
+ document.querySelectorAll('.tab').forEach(b=>{b.classList.toggle('on',b.dataset.tab===t);b.setAttribute('aria-selected',String(b.dataset.tab===t))});document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id==='p-'+t));
+ if(t==='lib'&&user&&!isNarrow())setTimeout(()=>$('#q').focus(),60);if(t==='prof'&&!PROF.loaded)loadProfile();window.__tab=t}
 function openChat(on){setTab(on?'lib':'top')}
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));$('#fab').onclick=()=>setTab('lib');
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>setTab(b.dataset.tab,true));document.querySelectorAll('#bnav button').forEach(b=>b.onclick=()=>setTab(b.dataset.go,true));
 const PROF={loaded:false,saved:''};
 async function loadProfile(){const r=await fetch('/api/profile').then(r=>r.json());$('#ptext').value=r.text||'';PROF.saved=r.text||'';PROF.loaded=true;pst()}
 function pst(m,ok){const s=$('#pstat');if(m){s.textContent=m;s.className=ok?'ok':'';return}const dirty=$('#ptext').value!==PROF.saved;s.textContent=dirty?'Unsaved changes':'Saved · used by Atlas AI';s.className=dirty?'':'ok'}

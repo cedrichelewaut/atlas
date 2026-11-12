@@ -43,6 +43,7 @@ from .state import (
     view_state,
 )
 from .tools import (
+    topic_anchors,
     topic_mask,
     _cur_vp,
     author_lookup,
@@ -127,7 +128,22 @@ def config(h: int = 760):
         "subtitle": CORPUS,
         "has_rating": bool(HAS_RATING),
         "attribution": store.META.get("attribution", ""),
+        "ranges": _ranges(),
     }
+
+
+_RANGES: dict = {}
+
+
+def _ranges():
+    """Slider bounds that fit the loaded dataset (year rounded out to decades, pages capped at 1000+)."""
+    if not _RANGES:
+        y = B["year"].drop_nulls()
+        y = y.filter(y > 0) if y.len() else y
+        lo = int(y.quantile(0.01) // 10 * 10) if y.len() else 1900
+        hi = int(-(-int(y.max()) // 10) * 10) if y.len() else 2030
+        _RANGES.update(year=[lo, max(hi, lo + 10)], has_pages=bool(B["pages"].is_not_null().any()))
+    return _RANGES
 
 
 @app.get("/assets/wordmark-{v}.png")
@@ -363,13 +379,12 @@ def map_overlay(x0: float, x1: float, y0: float, y1: float, all_max: int = 2500,
     P["x"] = [round(float(x), 4) for x in P["x"]]
     P["y"] = [round(float(y), 4) for y in P["y"]]
     P["r"] = [None if r is None else round(float(r), 2) for r in P["r"]]
-    L = (
-        v.group_by("cluster")
-        .agg(pl.len().alias("n"), pl.col("x").median().alias("x"), pl.col("y").median().alias("y"))
-        .sort("n", descending=True)
-    )
-    L = L.filter(pl.col("n") >= max(5, int(n * 0.004)))
-    labels = []  # cluster labels removed with the topic clusters
+    # topic names (curated list, see tools.topic_anchors), placed where each topic concentrates; the browser drops overlapping ones
+    labels = [
+        {"x": a["x"], "y": a["y"], "text": a["label"], "topic": a["topic"], "broad": a["broad"]}
+        for a in topic_anchors()
+        if x0 <= a["x"] <= x1 and y0 <= a["y"] <= y1
+    ]
     return {"in_view": n, "all": n <= all_max, "full": (x1 - x0) >= 0.8 * (X1 - X0), "points": P, "labels": labels}
 
 

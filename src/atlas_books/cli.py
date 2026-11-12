@@ -21,6 +21,9 @@ from . import paths, __version__
 def _port_free(host: str, port: int) -> bool:
     fam = socket.AF_INET6 if ":" in host else socket.AF_INET
     with socket.socket(fam, socket.SOCK_STREAM) as s:
+        # same option uvicorn binds with: lingering TIME_WAIT sockets from a just-stopped Atlas don't count as "in use",
+        # while a port someone is actively listening on still fails to bind
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
             s.bind((host, port))
             return True

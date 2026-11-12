@@ -432,13 +432,19 @@ TOPICS = {
         ["science-fiction", "sci-fi", "scifi", "sf", "space-opera"],
         ["science fiction", "sci-fi", "sci fi", "scifi", "sf", "space opera", "space"],
     ),
-    "fantasy": (["fantasy", "high-fantasy", "epic-fantasy"], ["fantasy", "high fantasy", "epic fantasy", "sword and sorcery"]),
+    "fantasy": (
+        ["fantasy", "high-fantasy", "epic-fantasy", "fantasy-fiction", "fantasy-literature"],
+        ["fantasy", "high fantasy", "epic fantasy", "sword and sorcery"],
+    ),
     "urban fantasy": (["urban-fantasy"], ["urban fantasy"]),
-    "romance": (["romance", "contemporary-romance"], ["romance", "romances", "romantic", "love story", "love stories"]),
+    "romance": (
+        ["romance", "contemporary-romance", "love-stories"],
+        ["romance", "romances", "romantic", "love story", "love stories"],
+    ),
     "historical romance": (["historical-romance", "regency", "regency-romance"], ["historical romance", "regency"]),
     "paranormal romance": (["paranormal-romance"], ["paranormal romance"]),
     "mystery": (
-        ["mystery", "mysteries", "detective"],
+        ["mystery", "mysteries", "detective", "detective-and-mystery-stories", "mystery-fiction", "thrillers-and-mystery"],
         ["mystery", "mysteries", "whodunit", "whodunnit", "detective", "detective stories"],
     ),
     "cozy mystery": (
@@ -450,15 +456,21 @@ TOPICS = {
         ["thriller", "thrillers", "suspense", "psychological thriller", "psychological thrillers"],
     ),
     "crime": (["crime", "crime-fiction"], ["crime", "crime fiction", "noir"]),
-    "horror": (["horror"], ["horror", "scary", "creepy", "spooky"]),
-    "historical fiction": (["historical-fiction", "historical"], ["historical fiction", "historical", "history"]),
+    "horror": (["horror", "horror-tales"], ["horror", "scary", "creepy", "spooky"]),
+    "historical fiction": (
+        ["historical-fiction", "historical", "historical-novels"],
+        ["historical fiction", "historical", "history"],
+    ),
     "young adult": (["young-adult", "ya", "teen"], ["young adult", "ya", "teen", "teens"]),
     "middle grade": (["middle-grade"], ["middle grade"]),
     "children's": (
         ["childrens", "children", "picture-books", "children-s-books", "kids"],
         ["children's", "childrens", "children", "kids", "picture books"],
     ),
-    "humor": (["humor", "humour", "funny", "comedy"], ["humor", "humour", "funny", "comedy", "comedic", "hilarious"]),
+    "humor": (
+        ["humor", "humour", "funny", "comedy", "humorous-stories"],
+        ["humor", "humour", "funny", "comedy", "comedic", "hilarious"],
+    ),
     "dystopian": (
         ["dystopian", "dystopia", "post-apocalyptic", "apocalyptic"],
         ["dystopian", "dystopia", "dystopias", "post-apocalyptic", "post apocalyptic", "apocalyptic"],
@@ -471,7 +483,7 @@ TOPICS = {
     ),
     "zombies": (["zombies", "zombie"], ["zombie", "zombies"]),
     "dragons": (["dragons"], ["dragon", "dragons"]),
-    "magic": (["magic"], ["magic", "wizards", "witches", "witch"]),
+    "magic": (["magic", "wizards"], ["magic", "wizards", "wizard"]),
     "graphic novels": (
         ["graphic-novels", "graphic-novel", "comics", "comic"],
         ["graphic novel", "graphic novels", "comics", "comic books", "comic"],
@@ -479,19 +491,22 @@ TOPICS = {
     "manga": (["manga", "mangas"], ["manga"]),
     "superheroes": (["superheroes", "superhero", "marvel", "dc-comics"], ["superhero", "superheroes", "marvel", "dc"]),
     "literary fiction": (["literary-fiction"], ["literary fiction", "literary"]),
-    "classics": (["classics"], ["classics", "classic"]),
+    "classics": (["classics", "classics-of-literature"], ["classics", "classic"]),
     "christian fiction": (["christian-fiction", "christian", "christian-romance"], ["christian", "christian fiction", "faith"]),
     "lgbtq": (
         ["lgbt", "lgbtq", "queer", "glbt", "m-m", "lesbian", "gay"],
         ["lgbt", "lgbtq", "lgbtq+", "queer", "gay", "lesbian"],
     ),
     "erotica": (["erotica", "erotic-romance", "erotic"], ["erotica", "erotic", "steamy", "spicy"]),
-    "western": (["western", "cowboys", "cowboy"], ["western", "westerns", "cowboy", "cowboys"]),
-    "adventure": (["adventure", "action-adventure"], ["adventure", "adventures", "action"]),
+    "western": (["western", "cowboys", "cowboy", "western-stories"], ["western", "westerns", "cowboy", "cowboys"]),
+    "adventure": (
+        ["adventure", "action-adventure", "adventure-stories", "adventure-and-adventurers"],
+        ["adventure", "adventures", "action"],
+    ),
     "steampunk": (["steampunk"], ["steampunk"]),
     "time travel": (["time-travel"], ["time travel", "time-travel"]),
-    "mythology": (["mythology", "fairy-tales"], ["mythology", "myths", "fairy tales", "fairytales", "retellings"]),
-    "war": (["war", "military", "wwii"], ["war", "military", "ww2", "wwii", "world war"]),
+    "mythology": (["mythology", "legends-folklore"], ["mythology", "myths", "legends"]),
+    "war": (["war", "military", "world-war"], ["war", "military", "world war"]),
     "short stories": (
         ["short-stories", "short-story", "anthology", "short-story-collections"],
         ["short stories", "short story", "anthology", "anthologies"],
@@ -506,15 +521,108 @@ TOPICS = {
     "sports": (["sports", "sports-romance"], ["sport", "sports", "football", "baseball"]),
     "christmas": (["christmas", "holiday"], ["christmas", "holiday", "holidays"]),
     "gothic": (["gothic"], ["gothic"]),
-    "coming of age": (["coming-of-age"], ["coming of age", "coming-of-age"]),
+    "coming of age": (["coming-of-age", "bildungsromans"], ["coming of age", "coming-of-age"]),
     "alternate history": (["alternate-history"], ["alternate history"]),
     "magical realism": (["magical-realism"], ["magical realism"]),
-    "animals": (["animals", "dogs", "cats"], ["animals", "animal", "dogs", "dog", "cats", "cat"]),
+    "animals": (["animals"], ["animals", "animal"]),
     "mafia": (["mafia"], ["mafia", "mob"]),
     "pirates": (["pirates"], ["pirate", "pirates"]),
     "spy": (["spy", "espionage"], ["spy", "spies", "espionage"]),
     "true crime": (["true-crime"], ["true crime"]),
     "new adult": (["new-adult", "college"], ["new adult", "college"]),
+    # --- places, periods and themes: mostly used as map labels (see topic_anchors) and by "zoom to <topic>" ---
+    "fairy tales": (
+        ["fairy-tales", "fairytales", "fairy-tale-retellings", "retellings", "folklore", "tales"],
+        ["fairy tales", "fairy tale", "fairytales", "folklore", "retellings"],
+    ),
+    "dogs": (["dogs", "dog", "dog-books"], ["dogs", "dog", "dog books"]),
+    "cats": (["cats", "cat", "cat-mysteries"], ["cats", "cat"]),
+    "horses": (["horses", "horse", "horse-books"], ["horses", "horse"]),
+    "dinosaurs": (["dinosaurs"], ["dinosaurs", "dinosaur"]),
+    "witches": (["witches", "witch", "witchcraft"], ["witches", "witch", "witchcraft"]),
+    "fae": (["fae", "faeries", "fairies"], ["fae", "fairies", "faeries"]),
+    "angels": (["angels", "fallen-angels"], ["angels", "angel"]),
+    "demons": (["demons", "demon"], ["demons", "demon"]),
+    "robots": (
+        ["robots", "androids", "artificial-intelligence", "cyborgs"],
+        ["robots", "robot", "androids", "artificial intelligence"],
+    ),
+    "cyberpunk": (["cyberpunk"], ["cyberpunk"]),
+    "royalty": (
+        ["royalty", "princess", "princesses", "kings", "queens"],
+        ["royalty", "princess", "princesses", "kings and queens"],
+    ),
+    "king arthur": (["arthurian", "king-arthur", "arthurian-romances", "knights"], ["king arthur", "arthurian", "knights"]),
+    "vikings": (["vikings", "viking", "norse", "norse-mythology"], ["vikings", "viking", "norse"]),
+    "ancient world": (
+        ["ancient-rome", "ancient-greece", "ancient-egypt", "ancient-history", "roman-empire"],
+        ["ancient world", "ancient rome", "ancient greece", "ancient egypt", "ancient history"],
+    ),
+    "medieval": (["medieval", "middle-ages", "medieval-romance"], ["medieval", "middle ages"]),
+    "victorian": (["victorian", "victorian-era", "19th-century"], ["victorian", "19th century"]),
+    "world war ii": (
+        ["wwii", "ww2", "world-war-ii", "world-war-2", "holocaust"],
+        ["world war ii", "world war 2", "ww2", "wwii", "second world war"],
+    ),
+    "civil war": (["civil-war", "american-civil-war"], ["civil war"]),
+    "sea stories": (
+        ["sea-stories", "sea", "ocean", "sailing", "nautical", "boats-and-boating"],
+        ["sea stories", "the sea", "ocean", "sailing"],
+    ),
+    "survival": (["survival", "wilderness"], ["survival", "wilderness"]),
+    "orphans": (["orphans", "orphan"], ["orphans", "orphan"]),
+    "school": (
+        ["school", "boarding-school", "boarding-schools", "high-school", "school-stories"],
+        ["school", "school stories", "boarding school", "high school"],
+    ),
+    "family": (["family", "family-saga", "domestic-fiction", "siblings"], ["family", "family saga", "family drama"]),
+    "friendship": (["friendship"], ["friendship", "friends"]),
+    "small town": (["small-town", "small-town-romance"], ["small town"]),
+    "feel good": (
+        ["feel-good", "heartwarming", "uplifting", "comfort-reads", "comfort-read"],
+        ["feel good", "feel-good", "heartwarming", "uplifting", "comfort read"],
+    ),
+    "inspirational": (
+        ["inspirational", "inspiration", "self-help", "personal-development"],
+        ["inspirational", "self help", "self-help"],
+    ),
+    "beach reads": (["beach-read", "beach-reads", "summer", "summer-reads"], ["beach reads", "beach read", "summer reads"]),
+    "music": (["music", "musicians", "rock-stars", "rockstar"], ["music", "musicians", "rock stars"]),
+    "art": (["art", "artists", "art-history"], ["art", "artists"]),
+    "food": (["food", "cooking", "culinary", "foodie", "cookbooks"], ["food", "cooking", "culinary"]),
+    "travel": (["travel", "travel-writing", "travelogue"], ["travel", "travel writing"]),
+    "nature": (["nature", "environment", "outdoors", "natural-history"], ["nature", "the outdoors"]),
+    "biography": (
+        ["biography", "biographies", "memoir", "memoirs", "autobiography"],
+        ["biography", "biographies", "memoir", "memoirs", "autobiography"],
+    ),
+    "philosophy": (["philosophy", "philosophical"], ["philosophy", "philosophical"]),
+    "psychological fiction": (["psychological-fiction", "psychological"], ["psychological fiction", "psychological novels"]),
+    "satire": (["satire", "political-satire"], ["satire", "satirical"]),
+    "plays": (["plays", "theatre", "theater", "shakespeare"], ["plays", "theatre", "theater", "shakespeare"]),
+    "essays": (["essays"], ["essays", "essay"]),
+    "sherlock holmes": (["sherlock-holmes", "sherlock"], ["sherlock holmes", "sherlock"]),
+    "police": (["police-procedural", "police", "detectives"], ["police procedural", "police"]),
+    "legal thriller": (["legal-thriller", "legal", "courtroom"], ["legal thriller", "courtroom"]),
+    "medical": (["medical", "medical-thriller", "doctors", "nurses"], ["medical", "doctors", "hospital"]),
+    "heist": (["heist", "heists", "caper"], ["heist", "heists"]),
+    "assassins": (["assassins", "assassin"], ["assassins", "assassin"]),
+    "british literature": (
+        ["british-literature", "english-literature", "british", "england", "english-fiction"],
+        ["british literature", "english literature", "british novels"],
+    ),
+    "american literature": (["american-literature", "american-fiction", "americana"], ["american literature", "american novels"]),
+    "russian literature": (["russian-literature", "russian", "russia"], ["russian literature", "russian novels"]),
+    "french literature": (["french-literature", "french", "france"], ["french literature", "french novels"]),
+    "german literature": (["german-literature", "german", "germany"], ["german literature", "german novels"]),
+    "japan": (["japan", "japanese", "japanese-literature"], ["japan", "japanese", "japanese literature"]),
+    "africa": (["africa", "african", "african-literature"], ["africa", "african literature"]),
+    "india": (["india", "indian", "indian-literature"], ["india", "indian literature"]),
+    "scotland": (["scotland", "scottish", "highlands", "highlanders"], ["scotland", "scottish", "highlands"]),
+    "ireland": (["ireland", "irish"], ["ireland", "irish"]),
+    "australia": (["australia", "australian"], ["australia", "australian"]),
+    "new york": (["new-york", "nyc", "new-york-city"], ["new york", "nyc"]),
+    "london": (["london"], ["london"]),
 }
 ALIAS = {a: k for k, (t, al) in TOPICS.items() for a in al + [k]}
 _TAGS = {}
@@ -538,6 +646,60 @@ def topic_lookup(text):
 def topic_mask(key):
     tg = TOPICS[key][0]
     return tags_col().str.contains(r"(?:^|, )(?:" + "|".join(re.escape(t) for t in tg) + r")(?:,|$)").to_numpy()
+
+
+# Map labels: broad, familiar topics are shown on the whole-map view; the more specific ones appear as you zoom in.
+BROAD_TOPICS = (
+    "romance", "mystery", "fantasy", "science fiction", "thriller", "historical fiction", "horror", "classics",
+    "children's", "young adult", "poetry", "humor", "adventure", "war", "literary fiction", "christian fiction",
+)  # fmt: skip
+LABEL_NAMES = {
+    "lgbtq": "LGBTQ+",
+    "new york": "New York",
+    "world war ii": "World War II",
+    "king arthur": "King Arthur",
+    "sherlock holmes": "Sherlock Holmes",
+}
+_ANCHORS: dict = {}
+_ANCHORS_LOCK = threading.Lock()
+
+
+def topic_anchors():
+    """Where each curated topic concentrates on the unfiltered map, computed once per dataset (~2.5s for 480k books).
+    [{topic, label, n, x, y, broad}], broad topics first, then by size. Left out: topics with few books (< 0.08% of the
+    dataset, min 25) and specific topics spread all over the map (lift < 2: their "spot" would be arbitrary)."""
+    with _ANCHORS_LOCK:
+        if "a" not in _ANCHORS:
+            out = []
+            try:
+                base = np.ones(B.height, bool)
+                need = max(25, int(B.height * 0.0008))
+                for key in TOPICS:
+                    m = topic_mask(key)
+                    n = int(m.sum())
+                    if n < need:
+                        continue
+                    w = best_window(m, base, mode="topic")
+                    if w and (key in BROAD_TOPICS or w[4]["lift"] >= 2):
+                        lab = LABEL_NAMES.get(key) or key[0].upper() + key[1:]
+                        out.append(
+                            {
+                                "topic": key,
+                                "label": lab,
+                                "n": n,
+                                "x": round(float(w[0]), 4),
+                                "y": round(float(w[1]), 4),
+                                "broad": key in BROAD_TOPICS,
+                            }
+                        )
+            except Exception as e:  # labels are a nicety: never break the map over them
+                print(f"Atlas: topic labels unavailable ({e})")
+            out.sort(key=lambda a: (not a["broad"], -a["n"]))
+            _ANCHORS["a"] = out
+        return _ANCHORS["a"]
+
+
+threading.Thread(target=topic_anchors, daemon=True, name="topic-anchors").start()
 
 
 AUTH = {}
