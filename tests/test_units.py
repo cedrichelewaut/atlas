@@ -244,3 +244,51 @@ def test_mention_links_same_title(monkeypatch):
     assert state.mention_links("**The Giver (The Giver, #1)** is great") == {
         "The Giver (The Giver, #1)": "https://www.goodreads.com/book/show/3636"
     }
+
+
+# ---------------------------------------------------------------- agent content blocks
+
+
+def test_content_text_normalises_provider_blocks():
+    """Some providers (e.g. Mistral) return assistant content as a list of blocks, not a string."""
+    from atlas_books import agent
+
+    assert agent._content_text("hi") == "hi"
+    assert agent._content_text(None) == ""
+    assert (
+        agent._content_text(
+            [{"type": "thinking", "thinking": [{"type": "text", "text": "hmm"}]}, {"type": "text", "text": "Fae are faeries."}]
+        )
+        == "Fae are faeries."
+    )
+
+
+def test_chat_tolerates_list_content_from_provider(monkeypatch):
+    """POST /api/chat must return a string reply even when the model answers with content blocks."""
+    from atlas_books import agent
+
+    async def fake_post(url, headers, body):
+        return {
+            "choices": [
+                {
+                    "message": {
+                        "role": "assistant",
+                        "content": [{"type": "thinking", "thinking": []}, {"type": "text", "text": "Fae are faeries."}],
+                    }
+                }
+            ]
+        }
+
+    async def noop_call(name, args):
+        return {}
+
+    monkeypatch.setattr(agent, "post", fake_post)
+    monkeypatch.setenv("AGENT_PROVIDER", "openai")
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.delenv("AGENT_BASE_URL", raising=False)
+    monkeypatch.delenv("AGENT_MODEL", raising=False)
+    r = asyncio.run(
+        agent.chat([{"role": "user", "content": "what is Fae"}], [], noop_call, lambda: {"summary": {"books_in_view": 5}})
+    )
+    assert r["via"] == "llm"
+    assert isinstance(r["reply"], str) and "Fae are faeries." in r["reply"]

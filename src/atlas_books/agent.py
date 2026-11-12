@@ -251,6 +251,16 @@ def load_profile(B=None):
     return out
 
 
+def _content_text(content):
+    """Normalise an assistant message's content to a string; some providers (e.g. Mistral) return a list of
+    content blocks (text/thinking) instead of a plain string."""
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        return "".join(b.get("text", "") for b in content if isinstance(b, dict) and b.get("type") == "text")
+    return "" if content is None else str(content)
+
+
 async def _openai(p, messages, tools, call_tool, trace):
     env, base, model = DEFAULTS[p]
     base = os.environ.get("AGENT_BASE_URL", base)
@@ -267,9 +277,9 @@ async def _openai(p, messages, tools, call_tool, trace):
             {"model": model, "messages": msgs, "tools": T},
         )
         m = r["choices"][0]["message"]
-        msgs.append(m)
+        msgs.append({**m, "content": _content_text(m.get("content"))})
         if not m.get("tool_calls"):
-            return m.get("content") or ""
+            return _content_text(m.get("content"))
         for tc in m["tool_calls"]:
             args = json.loads(tc["function"]["arguments"] or "{}")
             res = await call_tool(tc["function"]["name"], args)
@@ -576,7 +586,7 @@ def openai_step(base_url=None, api_key=None, model=None, temperature=0.15, extra
         msgs.append(
             {
                 "role": "assistant",
-                "content": m.get("content") or "",
+                "content": _content_text(m.get("content")),
                 **(
                     {
                         "tool_calls": [
@@ -619,10 +629,16 @@ async def run_agent_loop(msgs, tools, call_tool, trace, utext, step, view_state=
         m, calls, raw = await step(msgs, T, k)
         if hook:
             hook(
-                {"type": "model", "round": k, "content": m.get("content") or "", "tool_calls": _plain(calls), "raw": _plain(raw)}
+                {
+                    "type": "model",
+                    "round": k,
+                    "content": _content_text(m.get("content")),
+                    "tool_calls": _plain(calls),
+                    "raw": _plain(raw),
+                }
             )
         if not calls:
-            txt = (m.get("content") or "").strip()
+            txt = _content_text(m.get("content")).strip()
             if not txt and not retried:
                 retried = True
                 msgs.append({"role": "user", "content": "Answer the user now, briefly."})
